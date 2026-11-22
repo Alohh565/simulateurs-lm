@@ -1,0 +1,361 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Simulateur menuiseries</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: atelier sheet — client brief on top, joinery lines as cut-list cards, totals in a sticky ticket column */
+:root{
+  --bg:#f3f5f4; --surface:#ffffff; --line:#d5dcd9; --fg:#17201d; --muted:#5b6964;
+  --accent:#1d6a57; --accent-soft:#e1efea; --prime:#a8620f; --prime-soft:#fbeedd; --draw:#2b3a35; --glass:#cfe6f0;
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111816; --surface:#18221f; --line:#2c3a36; --fg:#e6ecea; --muted:#9aaba5;
+  --accent:#5cc3a6; --accent-soft:#1c3530; --prime:#f0a84c; --prime-soft:#3a2a15; --draw:#c9d6d1; --glass:#27485a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111816; --surface:#18221f; --line:#2c3a36; --fg:#e6ecea; --muted:#9aaba5;
+  --accent:#5cc3a6; --accent-soft:#1c3530; --prime:#f0a84c; --prime-soft:#3a2a15; --draw:#c9d6d1; --glass:#27485a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header h1{font-family:var(--f-display);font-weight:800;font-size:clamp(26px,4vw,36px);letter-spacing:-.01em;margin:0;text-wrap:balance}
+header p{margin:4px 0 0;color:var(--muted);max-width:65ch}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+.panel h2{font-family:var(--f-display);font-weight:700;font-size:17px;margin:0 0 12px}
+.panel h3{font-family:var(--f-display);font-weight:700;font-size:14px;margin:0 0 8px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+input,select{font:inherit;font-size:14px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 9px;width:100%;min-width:0}
+input[type=number]{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lines{display:flex;flex-direction:column;gap:12px}
+.ln{display:grid;grid-template-columns:110px minmax(0,1fr);gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+@media (max-width:560px){.ln{grid-template-columns:minmax(0,1fr)}}
+.ln-draw{display:flex;flex-direction:column;align-items:center;gap:6px}
+.ln-draw svg{width:100px;height:120px}
+.ln-draw .dim{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.ln-body{display:flex;flex-direction:column;gap:10px;min-width:0}
+.ln-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.ln-top strong{font-family:var(--f-display);font-size:15px}
+.ln .fields{grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.ln-foot{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted);align-items:center}
+.ln-foot b{color:var(--fg);font-family:var(--f-mono);font-weight:500}
+.chip{font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.chip.prime{background:var(--prime-soft);color:var(--prime)}
+.chip.no{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+button{font:inherit;cursor:pointer;border-radius:6px}
+.btn{background:var(--accent);color:var(--surface);border:0;padding:9px 14px;font-weight:600}
+.btn.ghost{background:transparent;color:var(--accent);border:1px dashed var(--accent)}
+.x{background:transparent;border:1px solid var(--line);color:var(--muted);padding:3px 9px;font-size:13px}
+.x:hover{color:var(--fg);border-color:var(--muted)}
+.ticket{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);display:flex;flex-direction:column;gap:14px}
+.rows{display:flex;flex-direction:column}
+.row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.row span:last-child{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.row.aid span:last-child{color:var(--prime)}
+.row.total{border-bottom:0;padding-top:10px}
+.row.total span:first-child{font-family:var(--f-display);font-weight:700;font-size:15px}
+.row.total span:last-child{font-size:22px;font-weight:500;color:var(--accent)}
+.save{background:var(--accent-soft);border-radius:8px;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.save div{display:flex;flex-direction:column}
+.save small{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.save b{font-family:var(--f-mono);font-weight:500;font-size:17px;color:var(--accent)}
+.note{font-size:12px;color:var(--muted);margin:0;max-width:75ch}
+details summary{cursor:pointer;font-family:var(--f-display);font-weight:700;font-size:15px}
+details[open] summary{margin-bottom:12px}
+.ptable{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+td input{width:84px}
+.src{font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px}
+.src.rel{background:var(--accent-soft);color:var(--accent)}
+.src.est{background:var(--prime-soft);color:var(--prime)}
+.toast{font-size:13px;color:var(--accent);min-height:1.2em}
+@media (prefers-reduced-motion:no-preference){.ln{animation:in .2s ease-out}@keyframes in{from{transform:translateY(4px)}to{transform:none}}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Rayon menuiserie · estimation client</div>
+    <h1>Simulateur menuiseries</h1>
+    <p>Chiffrez fenêtres et portes avec le client : prix catalogue, pose, TVA, MaPrimeRénov', reste à charge et économies de chauffage. Prix de base relevés en novembre 2026 sur le site d'une grande enseigne de bricolage, gamme Essentiel. L'exemple ci-dessous est fictif.</p>
+  </header>
+
+  <section class="panel">
+    <h2>Le client et son projet</h2>
+    <div class="fields">
+      <label for="c-nom">Nom du client<input id="c-nom" value="Exemple : M. et Mme Martin"></label>
+      <label for="c-mode">Formule
+        <select id="c-mode"><option value="pose">Fourni-posé par un pro</option><option value="fourn">Fourniture seule (le client pose)</option></select></label>
+      <label for="c-statut">Statut
+        <select id="c-statut"><option value="po">Propriétaire occupant</option><option value="pb">Propriétaire bailleur</option><option value="loc">Locataire</option></select></label>
+      <label for="c-age">Âge du logement
+        <select id="c-age"><option value="15">Plus de 15 ans</option><option value="2">Entre 2 et 15 ans</option><option value="0">Moins de 2 ans</option></select></label>
+      <label for="c-rev">Profil de revenus (Anah)
+        <select id="c-rev"><option value="bleu">Bleu · très modestes</option><option value="jaune" selected>Jaune · modestes</option><option value="violet">Violet · intermédiaires</option><option value="rose">Rose · supérieurs</option></select></label>
+      <label for="c-energie">Chauffage
+        <select id="c-energie"><option value="gaz">Gaz</option><option value="elec">Électricité</option><option value="fioul">Fioul</option><option value="bois">Bois / granulés</option></select></label>
+      <label for="c-cee">Prime CEE estimée (€ / menuiserie)<input id="c-cee" type="number" min="0" step="5" value="0"></label>
+    </div>
+  </section>
+
+  <div class="grid">
+    <section style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <div class="lines" id="lines"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn ghost" id="add-win">+ Fenêtre</button>
+        <button class="btn ghost" id="add-pf">+ Porte-fenêtre</button>
+        <button class="btn ghost" id="add-baie">+ Baie coulissante</button>
+        <button class="btn ghost" id="add-door">+ Porte d'entrée</button>
+      </div>
+
+      <details class="panel" id="hyp">
+        <summary>Grille de prix et hypothèses</summary>
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div>
+            <h3>Prix catalogue TTC, gamme Essentiel (prix = forfait + €/m² × surface)</h3>
+            <div class="ptable"><table>
+              <thead><tr><th>Produit</th><th>Forfait €</th><th>€ / m²</th><th>Prix fixe €</th><th>Source</th></tr></thead>
+              <tbody id="ptab"></tbody>
+            </table></div>
+          </div>
+          <div>
+            <h3>Gammes et performances</h3>
+            <div class="fields">
+              <label for="g-primo">Coef. gamme Primo<input id="g-primo" type="number" step="0.05" value="0.70"></label>
+              <label for="g-premium">Coef. gamme Premium<input id="g-premium" type="number" step="0.05" value="1.90"></label>
+              <label for="h-triple">Surcoût triple vitrage (%)<input id="h-triple" type="number" step="1" value="15"></label>
+            </div>
+            <div class="ptable" style="margin-top:10px"><table>
+              <thead><tr><th>Matériau</th><th>Uw double</th><th>Uw triple</th><th>Ud porte</th></tr></thead>
+              <tbody id="utab"></tbody>
+            </table></div>
+          </div>
+          <div>
+            <h3>Pose par un professionnel (€ HT par unité)</h3>
+            <div class="ptable"><table>
+              <thead><tr><th>Produit</th><th>Rénovation</th><th>Dépose totale</th></tr></thead>
+              <tbody id="posetab"></tbody>
+            </table></div>
+          </div>
+          <div class="fields">
+            <label for="h-dju">DJU annuels (Île-de-France ≈ 2 400)<input id="h-dju" type="number" step="50" value="2400"></label>
+            <label for="h-kwh">Prix du kWh (€)<input id="h-kwh" type="number" step="0.01" value="0.12"></label>
+          </div>
+          <p class="note"><span class="src rel">Relevé catalogue</span> : calé sur des prix publics relevés en ligne (ex. fenêtre PVC Essentiel 100 × 125 à 175 €, fenêtre bois Essentiel 140 × 125 à 259 €, porte PVC Essentiel à 619 €, porte alu Essentiel à 1 099 €, baie alu Essentiel 240 × 215 à 739 €). <span class="src est">Estimé</span> : pas de prix relevé, valeur à vérifier en magasin. Les prix du site sont TTC à 20 % : le simulateur les ramène en HT puis applique la TVA du chantier. La pose de fenêtre est calée sur la fourchette de 150 à 250 € donnée par les guides de pose des grandes enseignes ; les autres poses sont estimées. Les tarifs du site changent souvent, vérifiez avant de remettre un chiffrage.</p>
+        </div>
+      </details>
+    </section>
+
+    <aside class="ticket">
+      <div class="panel">
+        <h2>Estimation</h2>
+        <div class="rows" id="sum"></div>
+      </div>
+      <div class="panel">
+        <h2>Économies de chauffage</h2>
+        <div class="save">
+          <div><small>Énergie gagnée</small><b id="s-kwh">–</b></div>
+          <div><small>Par an</small><b id="s-eur">–</b></div>
+          <div><small>Retour sur invest.</small><b id="s-roi">–</b></div>
+          <div><small>Uw moyen</small><b id="s-uw">–</b></div>
+        </div>
+        <p class="note" style="margin-top:10px">Calcul simplifié : écart de coefficient U × surface × DJU. Ne remplace pas un audit énergétique.</p>
+      </div>
+      <div class="panel" style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn" id="copy">Copier le récapitulatif</button>
+        <div class="toast" id="toast" aria-live="polite"></div>
+        <textarea id="recap" readonly hidden style="width:100%;height:160px;font-family:var(--f-mono);font-size:12px"></textarea>
+        <p class="note">MaPrimeRénov' par geste 2026 : 100 € (bleu), 80 € (jaune), 40 € (violet) par fenêtre ou porte-fenêtre remplaçant du simple vitrage, logement de plus de 15 ans, pose par un artisan RGE, dossier déposé avant les travaux. Portes d'entrée non éligibles. TVA à 5,5 % seulement en fourni-posé par un pro, logement de plus de 2 ans et menuiserie aux seuils de performance ; en fourniture seule, TVA à 20 % et pas d'aide.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+const MATN = {pvc:"PVC", alu:"Aluminium", bois:"Bois"};
+const TYPES = {win:"Fenêtre", pf:"Porte-fenêtre", baie:"Baie coulissante", door:"Porte d'entrée"};
+// Prix catalogue TTC gamme Essentiel. door = prix fixe ; autres = forfait + €/m²
+const PX = {
+  pvc:  {win:{f:80,m:76,s:"rel"},  pf:{f:110,m:75,s:"rel"},  baie:{f:0,m:130,s:"est"}, door:{u:619,s:"rel"}},
+  alu:  {win:{f:210,m:148,s:"rel"},pf:{f:260,m:140,s:"est"},baie:{f:0,m:143,s:"rel"},  door:{u:1099,s:"rel"}},
+  bois: {win:{f:120,m:80,s:"rel"}, pf:{f:180,m:85,s:"est"}, baie:{f:0,m:200,s:"est"}, door:{u:1300,s:"est"}}
+};
+const PERF = {pvc:{uw2:1.3,uw3:0.9,ud:1.4}, alu:{uw2:1.6,uw3:1.1,ud:1.6}, bois:{uw2:1.5,uw3:1.0,ud:1.5}};
+const POSE = {win:{reno:200,tot:300}, pf:{reno:250,tot:350}, baie:{reno:400,tot:550}, door:{reno:350,tot:450}};
+const GAMME = {primo:"Primo", essentiel:"Essentiel", premium:"Premium"};
+const OLD_U = {simple:5.8, double:2.9, porte:3.5};
+const MPR = {bleu:100, jaune:80, violet:40, rose:0};
+const KWH = {gaz:0.12, elec:0.21, fioul:0.13, bois:0.08};
+const DEF = {win:[100,125], pf:[80,215], baie:[240,215], door:[90,215]};
+let uid = 0;
+let lines = [
+  {id:++uid,type:"win",mat:"pvc",gam:"essentiel",vit:"2",w:100,h:125,q:3,old:"simple",pose:"reno"},
+  {id:++uid,type:"pf",mat:"pvc",gam:"essentiel",vit:"2",w:80,h:215,q:1,old:"simple",pose:"reno"},
+  {id:++uid,type:"door",mat:"alu",gam:"essentiel",vit:"2",w:90,h:215,q:1,old:"porte",pose:"tot"}
+];
+const $ = id => document.getElementById(id);
+const num = id => parseFloat($(id).value) || 0;
+const eur = v => v.toLocaleString("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+const dec = (v,d=1) => v.toFixed(d).replace(".",",");
+
+function tables(){
+  const tag = s => `<span class="src ${s}">${s==="rel"?"Relevé catalogue":"Estimé"}</span>`;
+  $("ptab").innerHTML = Object.keys(PX).flatMap(m => Object.keys(TYPES).map(t => {
+    const p = PX[m][t];
+    return t==="door"
+      ? `<tr><td>${TYPES[t]} ${MATN[m]}</td><td>–</td><td>–</td><td><input id="px-${m}-${t}-u" type="number" step="10" value="${p.u}"></td><td>${tag(p.s)}</td></tr>`
+      : `<tr><td>${TYPES[t]} ${MATN[m]}</td><td><input id="px-${m}-${t}-f" type="number" step="5" value="${p.f}"></td><td><input id="px-${m}-${t}-m" type="number" step="1" value="${p.m}"></td><td>–</td><td>${tag(p.s)}</td></tr>`;
+  })).join("");
+  $("utab").innerHTML = Object.keys(PERF).map(m =>
+    `<tr><td>${MATN[m]}</td>${["uw2","uw3","ud"].map(k=>`<td><input id="pf-${m}-${k}" type="number" step="0.1" value="${PERF[m][k]}"></td>`).join("")}</tr>`).join("");
+  $("posetab").innerHTML = Object.keys(POSE).map(t =>
+    `<tr><td>${TYPES[t]}</td>${["reno","tot"].map(k=>`<td><input id="po-${t}-${k}" type="number" step="10" value="${POSE[t][k]}"></td>`).join("")}</tr>`).join("");
+  $("hyp").addEventListener("input", e => {
+    const p = e.target.id.split("-"), v = parseFloat(e.target.value) || 0;
+    if(p[0]==="px") PX[p[1]][p[2]][p[3]] = v;
+    else if(p[0]==="pf") PERF[p[1]][p[2]] = v;
+    else if(p[0]==="po") POSE[p[1]][p[2]] = v;
+    refresh();
+  });
+}
+
+function sel(id, opts, v){ return `<select id="${id}">${Object.entries(opts).map(([k,t])=>`<option value="${k}"${k==v?" selected":""}>${t}</option>`).join("")}</select>`; }
+
+function drawing(l){
+  const W=90,H=110, r=Math.min(W/l.w, H/l.h), w=l.w*r, h=l.h*r, x=(100-w)/2, y=(120-h)/2;
+  let inner="";
+  if(l.type==="door"){
+    inner=`<rect x="${x+6}" y="${y+6}" width="${w-12}" height="${h*0.35}" fill="var(--glass)" stroke="var(--draw)" stroke-width="1"/>
+           <circle cx="${x+w-12}" cy="${y+h*0.55}" r="2.2" fill="var(--draw)"/>`;
+  } else {
+    const n = l.type==="baie" ? 2 : (l.w>=90 ? 2 : 1), pw=(w-8)/n;
+    for(let i=0;i<n;i++){
+      const px=x+4+i*pw;
+      inner+=`<rect x="${px+2}" y="${y+4}" width="${pw-4}" height="${h-8}" fill="var(--glass)" stroke="var(--draw)" stroke-width="1"/>`;
+      if(l.vit==="3") inner+=`<rect x="${px+5}" y="${y+7}" width="${pw-10}" height="${h-14}" fill="none" stroke="var(--draw)" stroke-width=".5" stroke-dasharray="2 2"/>`;
+    }
+    if(l.type==="baie") inner+=`<path d="M${x+w/2-10} ${y+h/2} h20 m-4 -3 l4 3 l-4 3" fill="none" stroke="var(--draw)" stroke-width="1"/>`;
+  }
+  return `<svg viewBox="0 0 100 120" aria-hidden="true"><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="var(--surface)" stroke="var(--draw)" stroke-width="2"/>${inner}</svg>`;
+}
+
+function calc(l){
+  const p = PX[l.mat][l.type], area = l.w*l.h/10000, posé = $("c-mode").value==="pose";
+  let cat = l.type==="door" ? p.u : p.f + p.m*area;           // prix catalogue TTC 20 %
+  cat *= l.gam==="primo" ? num("g-primo") : l.gam==="premium" ? num("g-premium") : 1;
+  if(l.vit==="3" && l.type!=="door") cat *= 1+num("h-triple")/100;
+  const catHT = cat/1.2;
+  const poseHT = posé ? POSE[l.type][l.pose] : 0;
+  const ht = (catHT+poseHT)*l.q;
+  const u = l.type==="door" ? PERF[l.mat].ud : (l.vit==="3"?PERF[l.mat].uw3:PERF[l.mat].uw2);
+  const perf = u<=1.7; // Uw ≤ 1,3 (Sw ≥ 0,3) ou Uw ≤ 1,7 (Sw ≥ 0,36) ; Ud ≤ 1,7
+  const age = $("c-age").value, st = $("c-statut").value;
+  const tva = !posé || age==="0" ? .20 : (perf ? .055 : .10);
+  const mprOk = posé && l.type!=="door" && l.old==="simple" && age==="15" && st!=="loc" && MPR[$("c-rev").value]>0;
+  const mpr = mprOk ? MPR[$("c-rev").value]*l.q : 0;
+  const oldU = l.type==="door" ? OLD_U.porte : (OLD_U[l.old] ?? 2.9);
+  const kwh = Math.max(0,(oldU-u))*area*l.q*num("h-dju")*24/1000;
+  return {ht, tva, ttc:ht*(1+tva), cat, mpr, u, area, kwh, posé};
+}
+
+function lineHTML(l){
+  const oldOpts = l.type==="door" ? {porte:"Porte ancienne"} : {simple:"Simple vitrage", double:"Double vitrage ancien"};
+  return `<article class="ln" id="ln-${l.id}">
+    <div class="ln-draw"><div id="d-${l.id}">${drawing(l)}</div><span class="dim" id="dim-${l.id}"></span></div>
+    <div class="ln-body">
+      <div class="ln-top"><strong>${TYPES[l.type]}</strong><button class="x" data-del="${l.id}" aria-label="Supprimer cette ligne">Supprimer</button></div>
+      <div class="fields">
+        <label for="l${l.id}-mat">Matériau${sel(`l${l.id}-mat`,MATN,l.mat)}</label>
+        <label for="l${l.id}-gam">Gamme${sel(`l${l.id}-gam`,GAMME,l.gam)}</label>
+        ${l.type==="door"?"":`<label for="l${l.id}-vit">Vitrage${sel(`l${l.id}-vit`,{"2":"Double","3":"Triple"},l.vit)}</label>`}
+        <label for="l${l.id}-w">Largeur (cm)<input id="l${l.id}-w" type="number" min="30" step="5" value="${l.w}"></label>
+        <label for="l${l.id}-h">Hauteur (cm)<input id="l${l.id}-h" type="number" min="30" step="5" value="${l.h}"></label>
+        <label for="l${l.id}-q">Quantité<input id="l${l.id}-q" type="number" min="1" step="1" value="${l.q}"></label>
+        <label for="l${l.id}-old">Existant${sel(`l${l.id}-old`,oldOpts,l.old)}</label>
+        <label for="l${l.id}-pose">Pose${sel(`l${l.id}-pose`,{reno:"Rénovation (sur dormant)",tot:"Dépose totale"},l.pose)}</label>
+      </div>
+      <div class="ln-foot" id="f-${l.id}"></div>
+    </div></article>`;
+}
+
+function renderLines(){
+  $("lines").innerHTML = lines.length ? lines.map(lineHTML).join("") :
+    `<div class="panel"><p class="note">Aucune menuiserie. Ajoutez une fenêtre, une porte-fenêtre, une baie ou une porte avec les boutons ci-dessous.</p></div>`;
+  refresh();
+}
+
+function refresh(){
+  let ht=0,tvaAmt=0,mpr=0,kwh=0,qty=0,uSum=0,area=0;
+  const posé = $("c-mode").value==="pose";
+  const cee = posé ? num("c-cee") : 0;
+  lines.forEach(l=>{
+    const c = calc(l);
+    ht+=c.ht; tvaAmt+=c.ht*c.tva; mpr+=c.mpr; kwh+=c.kwh; qty+=l.q; uSum+=c.u*c.area*l.q; area+=c.area*l.q;
+    $(`d-${l.id}`).innerHTML = drawing(l);
+    $(`dim-${l.id}`).textContent = `${l.w} × ${l.h} cm`;
+    const posEl = $(`l${l.id}-pose`); if(posEl) posEl.disabled = !posé;
+    $(`f-${l.id}`).innerHTML = `<span>Prix catalogue <b>${eur(c.cat)}</b>/u</span>
+      <span>${l.type==="door"?"Ud":"Uw"} <b>${dec(c.u)}</b></span>
+      <span>TTC ligne <b>${eur(c.ttc)}</b></span>
+      <span class="chip">TVA ${dec(c.tva*100, c.tva===.055?1:0)} %</span>
+      ${c.mpr?`<span class="chip prime">MaPrimeRénov' −${eur(c.mpr)}</span>`:`<span class="chip no">Pas de MaPrimeRénov'</span>`}`;
+  });
+  const ttc = ht+tvaAmt, ceeTot = cee*lines.filter(l=>l.type!=="door").reduce((a,l)=>a+l.q,0);
+  const reste = Math.max(0, ttc-mpr-ceeTot), eurAn = kwh*num("h-kwh");
+  $("sum").innerHTML = `
+    <div class="row"><span>Menuiseries</span><span>${qty}</span></div>
+    <div class="row"><span>Total HT ${posé?"fourni posé":"fourniture"}</span><span>${eur(ht)}</span></div>
+    <div class="row"><span>TVA</span><span>${eur(tvaAmt)}</span></div>
+    <div class="row"><span>Total TTC</span><span>${eur(ttc)}</span></div>
+    <div class="row aid"><span>MaPrimeRénov'</span><span>−${eur(mpr)}</span></div>
+    <div class="row aid"><span>Prime CEE (estimée)</span><span>−${eur(ceeTot)}</span></div>
+    <div class="row total"><span>Reste à charge</span><span>${eur(reste)}</span></div>`;
+  $("s-kwh").textContent = Math.round(kwh).toLocaleString("fr-FR")+" kWh";
+  $("s-eur").textContent = eur(eurAn);
+  $("s-roi").textContent = eurAn>0 ? Math.round(reste/eurAn)+" ans" : "–";
+  $("s-uw").textContent = area ? dec(uSum/area,2) : "–";
+  window._recap = [
+    `Estimation menuiseries – ${$("c-nom").value} (${posé?"fourni-posé":"fourniture seule"})`,
+    ...lines.map(l=>{const c=calc(l);return `• ${l.q} × ${TYPES[l.type]} ${MATN[l.mat]} ${GAMME[l.gam]}${l.type==="door"?"":(l.vit==="3"?", triple vitrage":", double vitrage")}, ${l.w}×${l.h} cm : ${eur(c.ttc)} TTC`;}),
+    `Total TTC : ${eur(ttc)}`, `MaPrimeRénov' : −${eur(mpr)}`, `Prime CEE estimée : −${eur(ceeTot)}`,
+    `Reste à charge estimé : ${eur(reste)}`, `Économie de chauffage estimée : ${Math.round(kwh)} kWh/an, soit ${eur(eurAn)}/an`,
+    `Estimation indicative, non contractuelle, à partir des prix catalogue publics relevés en ligne.`].join("\n");
+}
+
+$("lines").addEventListener("input", onLine); $("lines").addEventListener("change", onLine);
+function onLine(e){
+  const m = e.target.id.match(/^l(\d+)-(\w+)$/); if(!m) return;
+  const l = lines.find(x=>x.id==m[1]); const v = e.target.value;
+  l[m[2]] = ["w","h","q"].includes(m[2]) ? Math.max(1, parseFloat(v)||0) : v;
+  refresh();
+}
+$("lines").addEventListener("click", e=>{
+  const id = e.target.dataset.del; if(!id) return;
+  lines = lines.filter(l=>l.id!=id); renderLines();
+});
+[["add-win","win"],["add-pf","pf"],["add-baie","baie"],["add-door","door"]].forEach(([b,t])=>
+  $(b).addEventListener("click",()=>{
+    lines.push({id:++uid,type:t,mat:t==="baie"?"alu":"pvc",gam:"essentiel",vit:"2",w:DEF[t][0],h:DEF[t][1],q:1,old:t==="door"?"porte":"simple",pose:"reno"});
+    renderLines();
+  }));
+document.querySelectorAll("#c-mode,#c-statut,#c-age,#c-rev,#c-cee,#c-nom,#g-primo,#g-premium,#h-triple,#h-dju,#h-kwh").forEach(el=>el.addEventListener("input",refresh));
+$("c-energie").addEventListener("change",()=>{ $("h-kwh").value = KWH[$("c-energie").value]; refresh(); });
+$("copy").addEventListener("click",()=>{
+  const t=$("recap"); t.value=window._recap;
+  const ok=()=>{$("toast").textContent="Récapitulatif copié."};
+  const fail=()=>{t.hidden=false;t.select();$("toast").textContent="Copie bloquée ici : le texte est sélectionné, faites Ctrl+C.";};
+  try{ navigator.clipboard.writeText(window._recap).then(ok,fail); }catch(_){ fail(); }
+});
+tables(); renderLines();
+</script>
+
+</body></html>

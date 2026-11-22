@@ -1,0 +1,199 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Simulateur Confort Chauffage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout : panneau de saisie à gauche (fiche logement), résultats classés à droite comme une étiquette énergie */
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --ink:#16202b; --muted:#5b6876; --line:#dbe1e7;
+  --cold:#2f6fb3; --hot:#d2541c; --good:#1f8a5b; --warn:#b7791f; --chipbg:#eaf0f5;
+  --display:"Archivo Narrow","Arial Narrow",sans-serif;
+  --body:"Public Sans",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f151c; --panel:#17202a; --ink:#e7edf3; --muted:#9aa7b4; --line:#2a3542;
+  --cold:#6aa6e6; --hot:#f07a43; --good:#4cc08a; --warn:#e0a84a; --chipbg:#1f2b37; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f151c; --panel:#17202a; --ink:#e7edf3; --muted:#9aa7b4; --line:#2a3542;
+  --cold:#6aa6e6; --hot:#f07a43; --good:#4cc08a; --warn:#e0a84a; --chipbg:#1f2b37; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 40px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:20px}
+header{display:grid;gap:6px}
+.therm{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--cold),var(--hot));max-width:180px}
+h1{font-family:var(--display);font-size:clamp(28px,4vw,40px);line-height:1.05;margin:0;letter-spacing:-.01em;text-wrap:balance}
+header p{margin:0;color:var(--muted);max-width:65ch}
+.grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:14px;min-width:0}
+.lbl{font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;font-size:13px;color:var(--muted);font-weight:600}
+.field{display:grid;gap:6px}
+input[type=number],select{width:100%;box-sizing:border-box;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--cold);outline-offset:2px}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.seg button{font:inherit;font-size:13px;padding:8px 4px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.hint{font-size:12.5px;color:var(--muted)}
+details{border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-weight:600}
+.prices{display:grid;grid-template-columns:1fr 92px;gap:8px 10px;align-items:center;margin-top:10px;font-size:13.5px}
+.prices input{padding:6px 8px;font-family:var(--mono);font-size:13px}
+.res{display:grid;gap:16px;min-width:0}
+.sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:520px){.sum{grid-template-columns:1fr}}
+.sum div{display:grid;gap:2px}
+.big{font-family:var(--mono);font-size:24px;font-variant-numeric:tabular-nums}
+.rows{display:grid;gap:10px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;padding:14px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.name{font-weight:600}
+.name small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+.cost{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cost small{display:block;color:var(--muted);font-size:12px}
+.bar{grid-column:1/-1;height:10px;background:var(--chipbg);border-radius:5px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--cold),var(--hot))}
+.chips{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12.5px;padding:3px 8px;border-radius:999px;background:var(--chipbg);color:var(--ink);font-variant-numeric:tabular-nums}
+.chip.good{color:var(--good)} .chip.warn{color:var(--warn)} .chip.cur{background:var(--ink);color:var(--panel)}
+.note{font-size:12.5px;color:var(--muted);max-width:75ch}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .35s ease}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="therm" aria-hidden="true"></div>
+    <h1>Quel chauffage pour ce logement ?</h1>
+    <p>Renseignez le logement du client : l'outil estime le besoin de chauffage, puis compare le coût annuel, l'investissement et le retour sur investissement de chaque solution.</p>
+  </header>
+
+  <div class="grid">
+    <form class="panel" id="f" onsubmit="return false">
+      <span class="lbl">Fiche logement</span>
+      <div class="field">
+        <label for="surf">Surface chauffée (m²)</label>
+        <input type="number" id="surf" value="100" min="10" max="1000">
+      </div>
+      <div class="field">
+        <span id="isoL">Isolation</span>
+        <div class="seg" role="group" aria-labelledby="isoL" id="iso">
+          <button type="button" data-v="60">Bonne</button>
+          <button type="button" data-v="110" aria-pressed="true">Moyenne</button>
+          <button type="button" data-v="170">Faible</button>
+          <button type="button" data-v="240">Passoire</button>
+        </div>
+        <span class="hint" id="isoH"></span>
+      </div>
+      <div class="field">
+        <label for="zone">Zone climatique</label>
+        <select id="zone">
+          <option value="1" selected>H1 — Nord, Est, Île-de-France</option>
+          <option value="0.85">H2 — Ouest, Sud-Ouest</option>
+          <option value="0.65">H3 — Méditerranée</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="cur">Chauffage actuel</label>
+        <select id="cur"></select>
+      </div>
+      <div class="field">
+        <label for="aides">Aides estimées sur le projet (€)</label>
+        <input type="number" id="aides" value="0" min="0" step="100">
+        <span class="hint">MaPrimeRénov', CEE… à vérifier selon les revenus du client sur france-renov.gouv.fr.</span>
+      </div>
+      <details>
+        <summary>Hypothèses de prix</summary>
+        <div class="prices" id="prices"></div>
+        <p class="hint">Valeurs indicatives, à mettre à jour avec les tarifs du moment.</p>
+      </details>
+    </form>
+
+    <section class="res">
+      <div class="panel">
+        <div class="sum">
+          <div><span class="lbl">Besoin de chauffage</span><span class="big" id="need"></span></div>
+          <div><span class="lbl">Coût actuel / an</span><span class="big" id="curCost"></span></div>
+          <div><span class="lbl">Meilleure économie</span><span class="big" id="best" style="color:var(--good)"></span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <span class="lbl">Solutions classées par coût annuel</span>
+        <div class="rows" id="rows"></div>
+      </div>
+      <p class="note">Estimations indicatives, pas un devis. Le besoin est calculé à partir d'une consommation moyenne au m² selon l'isolation. Un poêle chauffe surtout la pièce où il est installé ; une PAC air/air (clim réversible) ne produit pas d'eau chaude sanitaire. Faire valider le dimensionnement par un installateur RGE.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+const E = { // prix par unité, et kWh par unité
+  elec:{label:"Électricité (€/kWh)",price:0.25,kwh:1},
+  gaz:{label:"Gaz naturel (€/kWh)",price:0.12,kwh:1},
+  fioul:{label:"Fioul (€/litre)",price:1.15,kwh:10},
+  gran:{label:"Granulés (€/sac 15 kg)",price:6.5,kwh:72},
+  bois:{label:"Bûches (€/stère)",price:95,kwh:1700}
+};
+const CO2={elec:0.079,gaz:0.227,fioul:0.324,gran:0.030,bois:0.030}; // kg CO2/kWh (ordres de grandeur ADEME)
+const S=[
+  {id:"fioul",name:"Chaudière fioul",sub:"ancienne génération",e:"fioul",eff:0.75,inv:[7000,10000],cur:true},
+  {id:"gazold",name:"Chaudière gaz",sub:"ancienne génération",e:"gaz",eff:0.8,inv:[3500,5500],cur:true,alt:false},
+  {id:"gaz",name:"Chaudière gaz à condensation",sub:"rendement ~95 %",e:"gaz",eff:0.95,inv:[4000,6500],cur:true},
+  {id:"rad",name:"Radiateurs électriques",sub:"convecteurs / inertie",e:"elec",eff:1,inv:[2500,5000],cur:true},
+  {id:"pacae",name:"PAC air/eau",sub:"SCOP ~3,5, garde les radiateurs à eau",e:"elec",eff:3.5,inv:[11000,16000],cur:true},
+  {id:"pacaa",name:"PAC air/air (clim réversible)",sub:"SCOP ~4, chauffe et rafraîchit",e:"elec",eff:4,inv:[4500,9000],cur:true},
+  {id:"gran",name:"Poêle à granulés",sub:"rendement ~88 %",e:"gran",eff:0.88,inv:[4000,7000],cur:true},
+  {id:"bois",name:"Poêle à bûches",sub:"rendement ~75 %",e:"bois",eff:0.75,inv:[2500,5000],cur:true}
+];
+const $=id=>document.getElementById(id);
+const fmt=n=>Math.round(n).toLocaleString("fr-FR");
+const isoHints={60:"Maison récente ou rénovée (DPE A–C)",110:"Années 80–2000, isolation partielle (DPE D)",170:"Peu isolée (DPE E–F)",240:"Avant 1975, rien d'isolé (DPE G)"};
+let iso=110;
+
+$("cur").innerHTML=S.filter(s=>s.cur).map(s=>`<option value="${s.id}"${s.id==="fioul"?" selected":""}>${s.name}${s.id==="gazold"?" (ancienne)":""}</option>`).join("");
+$("prices").innerHTML=Object.entries(E).map(([k,v])=>`<label for="p_${k}">${v.label}</label><input type="number" id="p_${k}" step="0.01" value="${v.price}">`).join("");
+document.querySelectorAll("#iso button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#iso button").forEach(x=>x.setAttribute("aria-pressed","false"));
+  b.setAttribute("aria-pressed","true");iso=+b.dataset.v;calc();});
+document.querySelectorAll("input,select").forEach(el=>el.addEventListener("input",calc));
+
+function annual(s,need){
+  const e=E[s.e]; const price=+$("p_"+s.e).value||0;
+  const kwhFinal=need/s.eff; return {cost:kwhFinal/e.kwh*price, co2:kwhFinal*CO2[s.e]};
+}
+function calc(){
+  $("isoH").textContent=isoHints[iso];
+  const need=(+$("surf").value||0)*iso*(+$("zone").value);
+  const curS=S.find(s=>s.id===$("cur").value);
+  const cur=annual(curS,need);
+  const aides=+$("aides").value||0;
+  const list=S.filter(s=>s.id!=="gazold"||s===curS).map(s=>{
+    const a=annual(s,need); const isCur=s===curS;
+    const invMid=(s.inv[0]+s.inv[1])/2; const save=cur.cost-a.cost;
+    const roi=!isCur&&save>0?Math.max(0,invMid-aides)/save:null;
+    return {...s,...a,isCur,save,roi};
+  }).sort((a,b)=>a.cost-b.cost);
+  const max=Math.max(...list.map(l=>l.cost),1);
+  $("need").textContent=fmt(need)+" kWh";
+  $("curCost").textContent=fmt(cur.cost)+" €";
+  const best=list.filter(l=>!l.isCur).reduce((m,l)=>l.save>m?l.save:m,0);
+  $("best").textContent=best>0?"− "+fmt(best)+" €/an":"—";
+  $("rows").innerHTML=list.map(l=>{
+    const chips=[];
+    if(l.isCur) chips.push(`<span class="chip cur">Installation actuelle</span>`);
+    else {
+      chips.push(`<span class="chip">Invest. ${fmt(l.inv[0])}–${fmt(l.inv[1])} €</span>`);
+      if(l.save>0){chips.push(`<span class="chip good">− ${fmt(l.save)} €/an</span>`);
+        chips.push(`<span class="chip ${l.roi<=8?"good":"warn"}">Rentabilisé en ~${l.roi<1?"< 1":l.roi.toFixed(1).replace(".",",")} an${l.roi>=2?"s":""}</span>`);}
+      else chips.push(`<span class="chip warn">+ ${fmt(-l.save)} €/an vs actuel</span>`);
+    }
+    chips.push(`<span class="chip">${fmt(l.co2)} kg CO₂/an</span>`);
+    return `<div class="row"><div class="name">${l.name}<small>${l.sub}</small></div>
+      <div class="cost">${fmt(l.cost)} €<small>par an</small></div>
+      <div class="bar"><i style="width:${(l.cost/max*100).toFixed(1)}%"></i></div>
+      <div class="chips">${chips.join("")}</div></div>`;
+  }).join("");
+}
+calc();
+</script>
+
+</body></html>

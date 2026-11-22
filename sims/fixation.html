@@ -1,0 +1,321 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Simulateur de fixation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : formulaire à gauche, fiche de pose (étiquette de rayon) à droite ; une colonne sur mobile */
+:root{
+  --bg:#eef0f2; --panel:#ffffff; --ink:#1b2430; --muted:#5c6773; --line:#d3d8de;
+  --accent:#1f4fd1; --accent-soft:#e3eafc;
+  --ok:#1d7a46; --ok-soft:#ddf1e5; --warn:#a66300; --warn-soft:#fcefd6; --bad:#b3261e; --bad-soft:#fbe0de;
+  --wall:#c9ced4; --hatch:#9aa3ad; --piece:#c7a77b; --plug:#f2f2f2; --screw:#4a5563;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"Barlow",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12161b; --panel:#1b2129; --ink:#e6eaee; --muted:#9aa5b1; --line:#2e3742;
+  --accent:#7ea2ff; --accent-soft:#1f2b48;
+  --ok:#5fcf8f; --ok-soft:#173326; --warn:#f0b35a; --warn-soft:#3a2b12; --bad:#ff8a80; --bad-soft:#3d1a18;
+  --wall:#3a434e; --hatch:#5b6672; --piece:#8a6f4c; --plug:#cfd5db; --screw:#aab4bf; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161b; --panel:#1b2129; --ink:#e6eaee; --muted:#9aa5b1; --line:#2e3742;
+  --accent:#7ea2ff; --accent-soft:#1f2b48;
+  --ok:#5fcf8f; --ok-soft:#173326; --warn:#f0b35a; --warn-soft:#3a2b12; --bad:#ff8a80; --bad-soft:#3d1a18;
+  --wall:#3a434e; --hatch:#5b6672; --piece:#8a6f4c; --plug:#cfd5db; --screw:#aab4bf; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1120px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin-bottom:20px}
+h1{font-family:var(--f-display);font-weight:700;font-size:2.2rem;letter-spacing:.01em;margin:0;text-transform:uppercase;text-wrap:balance}
+header p{margin:0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;display:flex;flex-direction:column;gap:20px;min-width:0}
+.lbl{font-family:var(--f-display);font-weight:600;font-size:.95rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 8px}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:.85rem;border:1px solid var(--line);background:transparent;color:var(--ink);padding:5px 10px;border-radius:99px;cursor:pointer}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.sup{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.sup label{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:5px;padding:10px;cursor:pointer}
+.sup label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.sup input{margin-top:3px;accent-color:var(--accent)}
+.sup b{display:block;font-weight:600;font-size:.92rem;line-height:1.25}
+.sup small{color:var(--muted);font-size:.78rem;line-height:1.3;display:block}
+.row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:480px){.row{grid-template-columns:1fr 1fr}}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field span{font-size:.82rem;color:var(--muted)}
+input[type=number],select{font:inherit;font-family:var(--f-mono);font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px 10px;width:100%}
+select{font-family:var(--f-body)}
+input:focus-visible,select:focus-visible,.chip:focus-visible,.sup input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.check{display:flex;gap:8px;align-items:center;font-size:.92rem}
+.check input{accent-color:var(--accent);width:16px;height:16px}
+
+/* fiche */
+.ticket{padding:0;overflow:hidden;gap:0}
+.verdict{padding:16px 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.pill{font-family:var(--f-display);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:.9rem;padding:4px 10px;border-radius:3px}
+.v-ok .pill{background:var(--ok-soft);color:var(--ok)}
+.v-warn .pill{background:var(--warn-soft);color:var(--warn)}
+.v-bad .pill{background:var(--bad-soft);color:var(--bad)}
+.verdict p{margin:0;flex:1 1 220px;min-width:0}
+.load{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid var(--line)}
+.load div{padding:12px 20px;border-right:1px solid var(--line);min-width:0}
+.load div:last-child{border-right:0}
+.load small{display:block;color:var(--muted);font-size:.78rem}
+.load b{font-family:var(--f-mono);font-weight:500;font-size:1.15rem;font-variant-numeric:tabular-nums}
+@media (max-width:480px){.load div{padding:10px 12px}.load b{font-size:1rem}}
+.main{padding:20px;display:flex;flex-direction:column;gap:18px}
+.prod{font-family:var(--f-display);font-weight:700;font-size:1.7rem;line-height:1.1;margin:0;text-wrap:balance}
+.specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.specs div{background:var(--panel);padding:10px 12px;min-width:0}
+.specs small{display:block;color:var(--muted);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em}
+.specs b{font-family:var(--f-mono);font-weight:500;font-size:.98rem}
+.diagram{overflow-x:auto}
+.diagram svg{width:100%;min-width:320px;height:auto;display:block}
+.notes{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;color:var(--ink)}
+.notes li::marker{color:var(--accent)}
+.cart{border-top:1px dashed var(--line);padding:16px 20px;display:flex;flex-direction:column;gap:8px}
+.cart ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.cart li{display:flex;justify-content:space-between;gap:12px;font-size:.92rem}
+.cart li span:last-child{font-family:var(--f-mono);color:var(--muted);white-space:nowrap}
+.alt{font-size:.88rem;color:var(--muted);margin:0}
+footer{margin-top:16px;color:var(--muted);font-size:.82rem}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Simulateur de fixation</h1>
+    <p>Quelle cheville, quel foret, quelle vis pour fixer l'objet au mur.</p>
+  </header>
+
+  <div class="grid">
+    <form class="panel" id="form" autocomplete="off">
+      <fieldset>
+        <p class="lbl">Objet à fixer</p>
+        <div class="presets" id="presets"></div>
+      </fieldset>
+
+      <fieldset>
+        <p class="lbl">Support</p>
+        <div class="sup" id="supports"></div>
+      </fieldset>
+
+      <div class="row">
+        <label class="field"><span>Poids (kg)</span><input type="number" id="poids" min="0.5" step="0.5" value="15"></label>
+        <label class="field"><span>Points de fixation</span><input type="number" id="nb" min="1" max="12" step="1" value="4"></label>
+        <label class="field"><span>Épaisseur fixée (mm)</span><input type="number" id="ep" min="0" max="80" step="1" value="3"></label>
+      </div>
+
+      <label class="field"><span>Type de pose</span>
+        <select id="usage">
+          <option value="1">Accroché à plat (cadre, radiateur, miroir)</option>
+          <option value="1.5">En porte-à-faux (étagère, meuble haut)</option>
+          <option value="2">Bras articulé (support TV)</option>
+          <option value="2.5">Au plafond (suspension)</option>
+        </select>
+      </label>
+
+      <label class="check"><input type="checkbox" id="carrelage"> Mur carrelé</label>
+    </form>
+
+    <section class="panel ticket" id="ticket" aria-live="polite"></section>
+  </div>
+
+  <footer>Charges indicatives par point, marge de sécurité incluse. La notice du fabricant de la cheville et de l'objet fait foi.</footer>
+</div>
+
+<script>
+const SUP = {
+  beton:{label:"Béton",sub:"Dalle, mur porteur, voile",drill:"Perforateur SDS ou perceuse à percussion",kind:"solid",sols:[
+    {name:"Cheville nylon Ø6 × 30",t:"nylon",d:6,len:30,vis:"Ø4 à 5",cap:15},
+    {name:"Cheville nylon Ø8 × 40",t:"nylon",d:8,len:40,vis:"Ø5 à 6",cap:25},
+    {name:"Cheville nylon Ø10 × 50",t:"nylon",d:10,len:50,vis:"Ø6 à 8",cap:40},
+    {name:"Goujon d'ancrage M8",t:"goujon",d:8,len:50,vis:"M8",cap:80},
+    {name:"Goujon d'ancrage M10",t:"goujon",d:10,len:60,vis:"M10",cap:120}]},
+  pleine:{label:"Brique pleine / pierre",sub:"Murs anciens, poussière rouge",drill:"Percussion légère",kind:"solid",sols:[
+    {name:"Cheville nylon Ø6 × 30",t:"nylon",d:6,len:30,vis:"Ø4 à 5",cap:10},
+    {name:"Cheville nylon Ø8 × 40",t:"nylon",d:8,len:40,vis:"Ø5 à 6",cap:20},
+    {name:"Cheville nylon Ø10 × 50",t:"nylon",d:10,len:50,vis:"Ø6 à 8",cap:35},
+    {name:"Scellement chimique M8",t:"chim",d:10,len:80,vis:"M8",cap:80}]},
+  creuse:{label:"Brique creuse / parpaing",sub:"Le foret tombe dans le vide",drill:"Rotation seule, sans percussion",kind:"hollowblock",sols:[
+    {name:"Cheville universelle Ø8 × 50",t:"nylon",d:8,len:50,vis:"Ø5",cap:10},
+    {name:"Cheville longue Ø10 × 80",t:"nylon",d:10,len:80,vis:"Ø6",cap:20},
+    {name:"Scellement chimique M8 + tamis",t:"chim",d:16,len:85,vis:"M8",cap:45,tamis:true}]},
+  placo:{label:"Plaque de plâtre",sub:"BA13, sonne creux",drill:"Sans percussion",kind:"board",sols:[
+    {name:"Cheville autoforeuse",t:"auto",d:0,len:30,vis:"Ø4,5",cap:6},
+    {name:"Cheville métallique à expansion Ø8",t:"molly",d:8,len:37,vis:"M5",cap:15},
+    {name:"Cheville à bascule M6",t:"bascule",d:12,len:60,vis:"M6",cap:25}]},
+  bois:{label:"Bois massif",sub:"Poutre, montant, tasseau",drill:"Perceuse-visseuse, avant-trou",kind:"wood",sols:[
+    {name:"Vis bois Ø4",t:"bois",d:4,pre:2.5,cap:8},
+    {name:"Vis bois Ø5",t:"bois",d:5,pre:3,cap:15},
+    {name:"Vis bois Ø6",t:"bois",d:6,pre:4,cap:25},
+    {name:"Tire-fond Ø8",t:"bois",d:8,pre:5,cap:60}]}
+};
+const PRESETS = [
+  {k:"rad",name:"Radiateur électrique",p:15,nb:4,ep:3,u:"1"},
+  {k:"clim",name:"Split clim (intérieur)",p:12,nb:4,ep:2,u:"1"},
+  {k:"ce",name:"Chauffe-eau 100 L",p:135,nb:2,ep:5,u:"1"},
+  {k:"cadre",name:"Cadre",p:3,nb:2,ep:2,u:"1"},
+  {k:"miroir",name:"Miroir",p:12,nb:2,ep:3,u:"1"},
+  {k:"etag",name:"Étagère chargée",p:25,nb:2,ep:4,u:"1.5"},
+  {k:"meuble",name:"Meuble haut cuisine",p:40,nb:2,ep:18,u:"1.5"},
+  {k:"tv",name:"TV 55\" sur bras",p:20,nb:4,ep:4,u:"2"},
+  {k:"lustre",name:"Lustre",p:6,nb:1,ep:2,u:"2.5"}
+];
+const LENS=[16,20,25,30,35,40,45,50,60,70,80,90,100,110,120,140,160,180,200];
+const up=v=>LENS.find(l=>l>=v)||Math.ceil(v/10)*10;
+const fr=(n,d=1)=>n.toLocaleString("fr-FR",{maximumFractionDigits:d});
+const $=id=>document.getElementById(id);
+let preset="rad", support="creuse";
+
+$("presets").innerHTML=PRESETS.map(p=>`<button type="button" class="chip" data-k="${p.k}" aria-pressed="${p.k===preset}">${p.name}</button>`).join("");
+$("supports").innerHTML=Object.entries(SUP).map(([k,s])=>`<label><input type="radio" name="sup" id="sup-${k}" value="${k}" ${k===support?"checked":""}><span><b>${s.label}</b><small>${s.sub}</small></span></label>`).join("");
+
+$("presets").addEventListener("click",e=>{
+  const b=e.target.closest(".chip"); if(!b) return;
+  const p=PRESETS.find(x=>x.k===b.dataset.k); preset=p.k;
+  $("poids").value=p.p; $("nb").value=p.nb; $("ep").value=p.ep; $("usage").value=p.u;
+  syncChips(); render();
+});
+function syncChips(){document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.k===preset))}
+$("form").addEventListener("input",e=>{
+  if(e.target.name==="sup") support=e.target.value;
+  if(["poids","nb","ep","usage"].includes(e.target.id)){preset=null;syncChips()}
+  render();
+});
+$("form").addEventListener("submit",e=>e.preventDefault());
+
+function plan(sol,ep,tile){
+  // retourne foret, profondeur, fixation (texte) et longueurs pour le schéma
+  const r={foret:sol.d?`Ø${String(sol.d).replace(".",",")} mm`:"Aucun (se visse)",depth:null,fix:"",fixLen:0,plugLen:sol.len||0};
+  switch(sol.t){
+    case "nylon": r.depth=sol.len+10+tile; r.fixLen=up(ep+tile+sol.len+5); r.fix=`Vis ${sol.vis} × ${r.fixLen} mm`; break;
+    case "goujon": r.depth=sol.len+10+tile; r.fixLen=up(ep+tile+sol.len+15); r.fix=`Goujon M${sol.d} × ${r.fixLen} mm`; break;
+    case "chim": r.depth=sol.len+10+tile; r.fixLen=up(ep+tile+sol.len+15); r.fix=`Tige filetée M8 × ${r.fixLen} mm`; break;
+    case "auto": r.fixLen=up(ep+tile+30); r.fix=`Vis ${sol.vis} × ${r.fixLen} mm`; break;
+    case "molly": r.depth=13+tile; r.fixLen=up(ep+tile+37); r.fix=`Vis M5 × ${r.fixLen} mm`; break;
+    case "bascule": r.depth=13+tile; r.fixLen=up(ep+tile+13+50); r.fix=`Vis M6 × ${r.fixLen} mm`; break;
+    case "bois": r.fixLen=up(ep+Math.max(30,6*sol.d)); r.fix=`${sol.t==="bois"&&sol.d===8?"Tire-fond":"Vis"} Ø${sol.d} × ${r.fixLen} mm`; r.foret=`Avant-trou Ø${String(sol.pre).replace(".",",")} mm`; r.depth=r.fixLen-ep; r.plugLen=0; break;
+  }
+  return r;
+}
+
+function render(){
+  const s=SUP[support];
+  const poids=Math.max(0,+$("poids").value||0), nb=Math.max(1,Math.round(+$("nb").value||1));
+  const ep=Math.max(0,+$("ep").value||0), f=+$("usage").value, tile=$("carrelage").checked?10:0;
+  const ceiling=f===2.5;
+  let sols=s.sols;
+  if(ceiling && support==="placo") sols=sols.filter(x=>x.t==="bascule");
+  const calc=poids*f, per=calc/nb;
+  let sol=sols.find(x=>x.cap>=per), state;
+  const best=sols[sols.length-1];
+  if(!sol){state="bad";sol=best}
+  else state=per/sol.cap>0.7?"warn":"ok";
+  const r=plan(sol,ep,tile);
+  const needPts=Math.ceil(calc/best.cap);
+
+  const msg={
+    ok:`Fixation adaptée. Chaque point travaille à ${Math.round(per/sol.cap*100)} % de sa charge conseillée.`,
+    warn:`À la limite (${Math.round(per/sol.cap*100)} % de la charge conseillée). Ajoutez un point ou passez à la cheville au-dessus.`,
+    bad:`Aucune cheville pour ce support ne tient ${fr(per)} kg par point. Il faudrait au moins ${needPts} points, ou une autre solution.`
+  }[state];
+  const pill={ok:"Adapté",warn:"Limite",bad:"Hors limite"}[state];
+
+  const notes=[];
+  notes.push(`Perçage : ${s.drill.toLowerCase()}${r.depth&&sol.t!=="bois"&&s.kind!=="board"?`, profondeur ${r.depth} mm`:""}.`);
+  if(tile) notes.push("Carrelage : percez d'abord avec un foret carrelage, sans percussion, puis enfoncez la cheville au-delà du carreau pour ne pas le fendre.");
+  if(sol.t==="nylon") notes.push("La vis doit dépasser le bout de la cheville d'au moins un diamètre pour qu'elle s'expanse.");
+  if(sol.t==="chim") notes.push(`Soufflez et brossez le trou, ${sol.tamis?"glissez le tamis, ":""}injectez la résine puis attendez le durcissement (souvent 30 min à 2 h selon la température) avant de charger.`);
+  if(sol.t==="molly") notes.push("Serrez la vis jusqu'à sentir la cheville se bloquer derrière la plaque, puis dévissez pour poser l'objet. Une pince à expansion fait le travail proprement.");
+  if(sol.t==="bascule") notes.push("Il faut au moins 50 mm de vide derrière la plaque pour que la bascule s'ouvre. Enfilez l'objet sur la vis avant de pousser la bascule dans le trou.");
+  if(sol.t==="auto") notes.push("À réserver aux charges légères. Visez à la visseuse en vitesse lente pour ne pas émietter le plâtre.");
+  if(sol.t==="bois") notes.push("Vissez dans le fil sur au moins 6 fois le diamètre de la vis. Près d'un bord, gardez 5 diamètres de distance.");
+  if(sol.t==="goujon") notes.push("Percez au diamètre du goujon, enfoncez au marteau à travers la pièce puis serrez l'écrou au couple indiqué.");
+  if(support==="placo" && state==="bad") notes.push("Pour du lourd sur cloison : vissez dans les montants métalliques, ou posez une traverse bois entre deux montants avant de fermer la plaque.");
+  if(preset==="ce") notes.push(support==="beton"||support==="pleine"?"Chauffe-eau : la fixation doit reprendre le poids plein. Utilisez la barre ou la patte fournie et vérifiez le niveau.":"Chauffe-eau sur ce mur : un trépied ou un support au sol est la solution habituelle, le mur seul ne suffit pas.");
+  if(preset==="clim") notes.push("Split : fixez le châssis de montage bien de niveau, avec une légère pente côté évacuation des condensats.");
+  if(ceiling && support==="placo") notes.push("Au plafond en plaque de plâtre, seules les chevilles à bascule sont admises.");
+
+  const box=n=>Math.ceil(n/10)*10;
+  const cart=[];
+  if(sol.t==="bois") cart.push([r.fix,`× ${nb}`]);
+  else if(sol.t==="chim"){cart.push(["Cartouche de résine + pistolet","× 1"]);if(sol.tamis)cart.push(["Tamis Ø16","× "+nb]);cart.push([r.fix+" + écrou + rondelle","× "+nb])}
+  else if(sol.t==="goujon") cart.push([r.fix,`× ${nb}`]);
+  else {cart.push([sol.name,`boîte de ${box(nb)}`]); cart.push([r.fix,`× ${nb}`]);}
+  if(sol.d && sol.t!=="bois") cart.push([`Foret ${support==="bois"?"bois":support==="placo"?"métal":"béton"} Ø${sol.d}`,"× 1"]);
+  if(sol.t==="bois") cart.push([`Foret bois Ø${String(sol.pre).replace(".",",")}`,"× 1"]);
+  if(tile && sol.d) cart.push([`Foret carrelage Ø${sol.d}`,"× 1"]);
+  if(sol.t==="molly") cart.push(["Pince à expansion","option"]);
+
+  const next=sols[sols.indexOf(sol)+1];
+  $("ticket").innerHTML=`
+    <div class="verdict v-${state}"><span class="pill">${pill}</span><p>${msg}</p></div>
+    <div class="load">
+      <div><small>Poids</small><b>${fr(poids)} kg</b></div>
+      <div><small>Charge de calcul</small><b>${fr(calc)} kg</b></div>
+      <div><small>Par point</small><b>${fr(per)} kg</b></div>
+    </div>
+    <div class="main">
+      <h2 class="prod">${state==="bad"?"Au mieux : ":""}${sol.name}</h2>
+      <div class="specs">
+        <div><small>Foret</small><b>${r.foret}</b></div>
+        <div><small>Fixation</small><b>${r.fix}</b></div>
+        <div><small>Charge conseillée</small><b>${sol.cap} kg / point</b></div>
+        <div><small>Points</small><b>${nb}${state==="bad"?` (mini ${needPts})`:""}</b></div>
+      </div>
+      <div class="diagram">${svg(s,sol,r,ep,tile)}</div>
+      <ul class="notes">${notes.map(n=>`<li>${n}</li>`).join("")}</ul>
+      ${next&&state!=="bad"?`<p class="alt">Cran au-dessus si besoin : ${next.name} (${next.cap} kg / point).</p>`:""}
+    </div>
+    <div class="cart">
+      <p class="lbl" style="margin:0">À prendre en rayon</p>
+      <ul>${cart.map(c=>`<li><span>${c[0]}</span><span>${c[1]}</span></li>`).join("")}</ul>
+    </div>`;
+}
+
+function svg(s,sol,r,ep,tile){
+  const W=360,H=150,x0=20,y0=40,h=70;
+  const wallLen=s.kind==="board"?13:Math.max((r.depth||40)+25,70);
+  const cavity=s.kind==="board"?60:0;
+  const total=ep+tile+wallLen+cavity+20;
+  const k=(W-40)/total;
+  const xp=x0, xt=xp+ep*k, xw=xt+tile*k, xe=xw+wallLen*k;
+  const mid=y0+h/2, hole=Math.max(4,(sol.d||4)*1.4);
+  let g=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Coupe de la fixation">
+  <defs><pattern id="ht" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--hatch)" stroke-width="1"/></pattern></defs>`;
+  // mur
+  g+=`<rect x="${xw}" y="${y0-15}" width="${xe-xw}" height="${h+30}" fill="var(--wall)"/><rect x="${xw}" y="${y0-15}" width="${xe-xw}" height="${h+30}" fill="url(#ht)"/>`;
+  if(s.kind==="hollowblock"){ for(let i=0;i<2;i++){const cx=xw+(wallLen*k)*(0.3+i*0.42);g+=`<rect x="${cx}" y="${y0}" width="${wallLen*k*0.22}" height="${h}" fill="var(--panel)" stroke="var(--hatch)"/>`}}
+  if(cavity) g+=`<line x1="${xe}" y1="${y0-15}" x2="${xe}" y2="${y0+h+15}" stroke="var(--hatch)"/><text x="${xe+8}" y="${y0-2}" font-size="9" fill="var(--muted)" font-family="IBM Plex Mono,monospace">vide</text>`;
+  if(tile) g+=`<rect x="${xt}" y="${y0-15}" width="${xw-xt}" height="${h+30}" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width=".5"/>`;
+  // pièce
+  if(ep>0) g+=`<rect x="${xp}" y="${y0}" width="${Math.max(2,xt-xp)}" height="${h}" fill="var(--piece)"/>`;
+  // trou
+  const dEnd=xt+(r.depth||0)*k;
+  if(sol.d && sol.t!=="auto") g+=`<rect x="${xt}" y="${mid-hole/2-1}" width="${Math.max(0,Math.min(dEnd,xe+ (cavity?0:0))-xt)}" height="${hole+2}" fill="var(--bg)"/>`;
+  // cheville
+  if(r.plugLen){
+    const ps=xw, pl=r.plugLen*k;
+    if(sol.t==="bascule"){g+=`<rect x="${ps}" y="${mid-3}" width="${13*k}" height="6" fill="var(--plug)" stroke="var(--screw)" stroke-width=".5"/><path d="M${xe+20*k} ${mid-22} L${xe+22*k} ${mid} L${xe+20*k} ${mid+22}" fill="none" stroke="var(--screw)" stroke-width="3"/>`}
+    else if(sol.t!=="goujon") g+=`<rect x="${ps}" y="${mid-hole/2}" width="${pl}" height="${hole}" fill="var(--plug)" stroke="var(--screw)" stroke-width=".5"/>`;
+  }
+  // vis / tige
+  const vs=xp-6, ve=xp+r.fixLen*k;
+  g+=`<rect x="${vs}" y="${mid-8}" width="6" height="16" fill="var(--screw)"/><line x1="${vs+6}" y1="${mid}" x2="${ve}" y2="${mid}" stroke="var(--screw)" stroke-width="3" stroke-linecap="round"/>`;
+  // cotes
+  const cote=(a,b,y,t)=>`<line x1="${a}" y1="${y}" x2="${b}" y2="${y}" stroke="var(--muted)" stroke-width=".8"/><line x1="${a}" y1="${y-3}" x2="${a}" y2="${y+3}" stroke="var(--muted)"/><line x1="${b}" y1="${y-3}" x2="${b}" y2="${y+3}" stroke="var(--muted)"/><text x="${(a+b)/2}" y="${y+12}" text-anchor="middle" font-size="9.5" fill="var(--ink)" font-family="IBM Plex Mono,monospace">${t}</text>`;
+  g+=cote(vs+6,ve,y0+h+24,`fixation ${r.fixLen} mm`);
+  if(r.depth && s.kind!=="board") g+=cote(xt,dEnd,y0-24,`perçage ${r.depth} mm`);
+  if(ep>0) g+=`<text x="${xp}" y="${y0-4}" font-size="9" fill="var(--muted)" font-family="IBM Plex Mono,monospace">${ep} mm</text>`;
+  return g+"</svg>";
+}
+render();
+</script>
+
+</body></html>

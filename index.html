@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulateurs de vente bricolage – tous rayons</title>
+<style>
+:root{--g:#78be20;--gd:#188803;--ink:#1d2a1a;--muted:#5f6b5c;--bg:#f4f6f1;--line:#dfe5d8;--card:#fff}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);display:flex;flex-direction:column}
+header{background:#fff;border-bottom:1px solid var(--line);flex:0 0 auto}
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px}
+.logo{width:34px;height:34px;border-radius:8px;background:var(--g);display:grid;place-items:center;flex:0 0 auto;cursor:pointer;border:0}
+.logo svg{width:22px;height:22px}
+.brand{font-weight:700;font-size:16px;line-height:1.1;cursor:pointer}
+.brand small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.sel{margin-left:auto;display:flex;gap:8px;align-items:center}
+.sel label{font-size:12px;color:var(--muted)}
+.sel select{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);max-width:56vw}
+nav.rayons{display:flex;gap:6px;overflow-x:auto;padding:0 16px 10px;scrollbar-width:thin}
+nav.rayons button,.subs button{font:inherit;font-size:13px;white-space:nowrap;border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer}
+nav.rayons button:hover,.subs button:hover{border-color:var(--g)}
+nav.rayons button.on{background:var(--gd);border-color:var(--gd);color:#fff}
+.subs{display:none;gap:6px;padding:8px 16px;background:#eef3e7;border-top:1px solid var(--line);overflow-x:auto}
+.subs.show{display:flex}
+.subs button.on{background:var(--g);border-color:var(--g);color:#fff;font-weight:600}
+main{flex:1 1 auto;position:relative;min-height:0}
+iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;display:none}
+iframe.on{display:block}
+#home{position:absolute;inset:0;overflow:auto;padding:24px 16px 40px;display:none}
+#home.on{display:block}
+#home h1{font-size:22px;margin:0 auto 4px;max-width:1000px}
+#home p.lead{color:var(--muted);margin:0 auto 20px;max-width:1000px;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;max-width:1000px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.card h2{font-size:16px;margin:0;display:flex;align-items:center;gap:8px}
+.card h2 span{font-size:20px}
+.card .tools{display:flex;flex-direction:column;gap:6px}
+.card .tools button{font:inherit;text-align:left;border:1px solid var(--line);background:#fafcf7;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:13px}
+.card .tools button b{display:block;font-size:14px}
+.card .tools button em{font-style:normal;color:var(--muted)}
+.card .tools button:hover{border-color:var(--g);background:#f1f8e8}
+@media (max-width:600px){.sel label{display:none}.brand small{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <button class="logo" id="goHome" aria-label="Accueil"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 3 2 11h3v9h5v-6h4v6h5v-9h3z"/></svg></button>
+    <div class="brand" id="goHome2">Simulateurs de vente bricolage<small>Tous les rayons, un seul outil</small></div>
+    <div class="sel"><label for="pick">Aller au rayon</label><select id="pick"></select></div>
+  </div>
+  <nav class="rayons" id="rayons"></nav>
+  <div class="subs" id="subs"></div>
+</header>
+<main id="main">
+  <section id="home">
+    <h1>Choisis ton rayon</h1>
+    <p class="lead">Chaque simulateur garde toutes ses fonctionnalités. Tu peux passer d'un rayon à l'autre sans perdre ce que tu as saisi.</p>
+    <div class="grid" id="grid"></div>
+  </section>
+</main>
+<script>
+const RAYONS = [
+  {id:'confort', name:'Confort – Chauffage & clim', icon:'🔥', tools:[
+    {id:'chauffage', file:'sims/chauffage.html', name:'Simulateur Confort Chauffage', desc:'Coût annuel, investissement, retour et CO₂ de 8 solutions'}
+  ]},
+  {id:'menuiseries', name:'Menuiseries', icon:'🪟', tools:[
+    {id:'menuiseries', file:'sims/menuiseries.html', name:'Simulateur menuiseries', desc:'Fenêtres et portes : prix, pose, TVA, MaPrimeRénov\''}
+  ]},
+  {id:'cuisine', name:'Cuisine', icon:'🍳', tools:[
+    {id:'cuisine', file:'sims/cuisine.html', name:'Atelier Cuisine', desc:'Plan 2D, vue 3D, aménagement, ergonomie et devis'}
+  ]},
+  {id:'sols', name:'Sols', icon:'🧱', tools:[
+    {id:'sols', file:'sims/sols.html', name:'Simulateur Sols', desc:'Pièces, revêtement, type de pose, plan 3D et finitions'}
+  ]},
+  {id:'quincaillerie', name:'Quincaillerie – Fixation', icon:'🔩', tools:[
+    {id:'fixation', file:'sims/fixation.html', name:'Simulateur de fixation', desc:'Cheville, foret et vis selon support et poids'}
+  ]}
+];
+const TOOLS = {}; RAYONS.forEach(r=>r.tools.forEach(t=>{t.rayon=r;TOOLS[t.id]=t;}));
+const $ = s=>document.querySelector(s);
+const frames = {};
+let current = null;
+
+// Barre des rayons + menu déroulant + accueil
+const pick = $('#pick');
+pick.innerHTML = '<option value="">— Accueil —</option>' + RAYONS.map(r=>
+  `<optgroup label="${r.icon} ${r.name}">${r.tools.map(t=>`<option value="${t.id}">${t.name}</option>`).join('')}</optgroup>`).join('');
+$('#rayons').innerHTML = RAYONS.map(r=>`<button data-r="${r.id}">${r.icon} ${r.name}</button>`).join('');
+$('#grid').innerHTML = RAYONS.map(r=>`<div class="card"><h2><span>${r.icon}</span>${r.name}</h2><div class="tools">${
+  r.tools.map(t=>`<button data-t="${t.id}"><b>${t.name}</b><em>${t.desc}</em></button>`).join('')}</div></div>`).join('');
+
+function lastToolOf(r){ try{ const v=localStorage.getItem('sim-hub-last-'+r.id); if(v&&TOOLS[v]&&TOOLS[v].rayon===r) return v; }catch(e){} return r.tools[0].id; }
+
+function show(id){
+  const t = TOOLS[id];
+  Object.values(frames).forEach(f=>f.classList.remove('on'));
+  $('#home').classList.toggle('on', !t);
+  document.querySelectorAll('#rayons button').forEach(b=>b.classList.toggle('on', !!t && b.dataset.r===t.rayon.id));
+  const subs = $('#subs');
+  if(!t){ subs.classList.remove('show'); pick.value=''; current=null; document.title='Simulateurs de vente bricolage – tous rayons'; return; }
+  // Les iframes déjà ouvertes sont conservées : on retrouve sa saisie en revenant sur un rayon
+  if(!frames[id]){ const f=document.createElement('iframe'); f.src=t.file; f.title=t.name; $('#main').appendChild(f); frames[id]=f; }
+  frames[id].classList.add('on');
+  if(t.rayon.tools.length>1){
+    subs.innerHTML = t.rayon.tools.map(x=>`<button data-t="${x.id}" class="${x.id===id?'on':''}">${x.name}</button>`).join('');
+    subs.classList.add('show');
+  } else subs.classList.remove('show');
+  pick.value=id; current=id; document.title=t.name+' – Simulateurs de vente bricolage';
+  try{ localStorage.setItem('sim-hub-last-'+t.rayon.id, id); }catch(e){}
+  const btn=document.querySelector(`#rayons button[data-r="${t.rayon.id}"]`); if(btn) btn.scrollIntoView({block:'nearest',inline:'nearest'});
+}
+function go(id){ if(location.hash.slice(1)===id) show(id); else location.hash = id || ''; if(!id) show(null); }
+function route(){ const h=location.hash.slice(1); if(TOOLS[h]) show(h); else { const r=RAYONS.find(x=>x.id===h); r?show(lastToolOf(r)):show(null); } }
+
+$('#rayons').addEventListener('click',e=>{const b=e.target.closest('button'); if(b) go(lastToolOf(RAYONS.find(r=>r.id===b.dataset.r)));});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-t]'); if(b) go(b.dataset.t);});
+pick.addEventListener('change',()=>go(pick.value));
+$('#goHome').onclick=$('#goHome2').onclick=()=>{ history.replaceState(null,'',location.pathname+location.search); show(null); };
+window.addEventListener('hashchange',route);
+route();
+</script>
+</body>
+</html>

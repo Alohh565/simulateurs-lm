@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulateur Sols</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout : deux colonnes en rayon (saisie à gauche, budget collant à droite), une colonne sur téléphone. Comparateur en onglet. */
+:root{
+  --bg:#f3f2ee; --surface:#ffffff; --ink:#1d2529; --muted:#5d686d; --line:#dcdcd4;
+  --accent:#1e5a73; --accent-soft:#e1edf2; --accent-ink:#ffffff;
+  --ok:#2c7a4b; --ok-soft:#e3f2e8; --warn:#9a6a00; --warn-soft:#fbf1d8; --bad:#a63b2d; --bad-soft:#f8e3df;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Figtree", "Segoe UI", system-ui, sans-serif;
+  --r:10px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14191b; --surface:#1c2326; --ink:#e7ecec; --muted:#9aa6aa; --line:#2f393d;
+    --accent:#6fb3cf; --accent-soft:#1d3640; --accent-ink:#0d1a20;
+    --ok:#6cc48f; --ok-soft:#1b3326; --warn:#e2b14f; --warn-soft:#3a2f17; --bad:#ec8a7b; --bad-soft:#3d221e;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14191b; --surface:#1c2326; --ink:#e7ecec; --muted:#9aa6aa; --line:#2f393d;
+  --accent:#6fb3cf; --accent-soft:#1d3640; --accent-ink:#0d1a20;
+  --ok:#6cc48f; --ok-soft:#1b3326; --warn:#e2b14f; --warn-soft:#3a2f17; --bad:#ec8a7b; --bad-soft:#3d221e;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:1.6rem}
+h2{font-size:1.15rem}
+h3{font-size:1rem}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
+header.top{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px;margin-bottom:16px}
+header.top p{margin:4px 0 0;color:var(--muted);font-size:.92rem}
+.tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
+.tabs button{border:0;background:transparent;color:var(--ink);font:600 .95rem var(--f-body);padding:10px 18px;border-radius:999px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:14px}
+.col{display:flex;flex-direction:column;gap:16px}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.step{font:700 .75rem var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+label{font-size:.85rem;color:var(--muted);font-weight:600;display:flex;flex-direction:column;gap:4px}
+input[type="number"],input[type="text"],select{font:500 1rem var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 10px;min-height:44px;width:100%}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.rooms{display:flex;flex-direction:column;gap:10px}
+.room{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr auto;gap:8px;align-items:end;padding:10px;border:1px solid var(--line);border-radius:8px}
+.room .area{font-variant-numeric:tabular-nums;font-weight:700;align-self:center;white-space:nowrap}
+@media (max-width:560px){.room{grid-template-columns:1fr 1fr}.room .name{grid-column:1/-1}}
+.btn{font:600 .95rem var(--f-body);border-radius:8px;padding:10px 14px;min-height:44px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent}
+.btn.icon{padding:8px 12px;min-height:44px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.types{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.type{border:1px solid var(--line);border-radius:8px;padding:10px;text-align:left;background:var(--bg);cursor:pointer;color:var(--ink);font:inherit;display:flex;flex-direction:column;gap:2px;min-height:64px}
+.type strong{font-size:.95rem}
+.type span{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.type[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1px solid var(--line);background:var(--bg);color:var(--ink);font:600 .9rem var(--f-body);padding:9px 12px;border-radius:999px;cursor:pointer;min-height:40px}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px}
+.check{display:flex;flex-direction:row;align-items:center;gap:10px;color:var(--ink);font-weight:500;font-size:.95rem;padding:8px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--accent)}
+.note{font-size:.85rem;color:var(--muted);margin:0}
+.pill{display:inline-flex;align-items:center;gap:6px;font:600 .78rem var(--f-body);padding:4px 10px;border-radius:999px;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.alerts{display:flex;flex-direction:column;gap:6px}
+.alert{font-size:.88rem;padding:8px 10px;border-radius:8px;border-left:4px solid}
+.alert.warn{background:var(--warn-soft);border-color:var(--warn)}
+.alert.bad{background:var(--bad-soft);border-color:var(--bad)}
+.alert.ok{background:var(--ok-soft);border-color:var(--ok)}
+details.settings{border:1px dashed var(--line);border-radius:8px;padding:10px}
+details.settings summary{cursor:pointer;font-weight:600}
+details.settings .row{margin-top:10px}
+
+/* Budget */
+.sticky{position:sticky;top:12px}
+.total{display:flex;flex-direction:column;gap:2px;padding:14px;border-radius:8px;background:var(--accent);color:var(--accent-ink)}
+.total .big{font:700 2.1rem var(--f-display);font-variant-numeric:tabular-nums}
+.total small{opacity:.85;font-size:.85rem}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:8px}
+.kpi b{display:block;font:700 1.15rem var(--f-display);font-variant-numeric:tabular-nums}
+.kpi span{font-size:.75rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.lines td{padding:7px 0;border-bottom:1px solid var(--line);vertical-align:top;font-size:.92rem}
+.lines td:last-child{text-align:right;font-weight:600;white-space:nowrap;padding-left:8px}
+.lines .qty{display:block;font-size:.8rem;color:var(--muted)}
+.lines tr.sub td{font-weight:700;border-bottom:0}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+textarea#recap{width:100%;min-height:160px;font:400 .85rem ui-monospace,Menlo,monospace;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px}
+.toast{font-size:.85rem;color:var(--ok);min-height:1.2em}
+
+/* Comparateur */
+.cmp-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.cmp{min-width:980px}
+.cmp th,.cmp td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:.9rem;vertical-align:middle}
+.cmp th{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);background:var(--bg);position:sticky;top:0}
+.cmp tr.current td{background:var(--accent-soft)}
+.cmp td.num{text-align:right;font-weight:700;white-space:nowrap}
+.dots{display:inline-flex;gap:3px}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--line);display:block}
+.dots i.on{background:var(--accent)}
+.cmp-filters{display:flex;flex-wrap:wrap;gap:16px;align-items:end}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.85rem;color:var(--muted)}
+.plan3d{position:relative;height:380px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg)}
+.plan3d canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.plan3d canvas:active{cursor:grabbing}
+.plan-msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;margin:0;color:var(--muted);font-size:.9rem;text-align:center;padding:16px}
+@media (max-width:560px){.plan3d{height:300px}}
+[hidden]{display:none !important}
+@media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Simulateur Sols</h1>
+      <p>Quantités, chutes et budget complet pour un projet de revêtement de sol. Prix indicatifs, modifiables.</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Vues">
+      <button role="tab" id="tab-sim" aria-selected="true" aria-controls="view-sim">Simulateur</button>
+      <button role="tab" id="tab-cmp" aria-selected="false" aria-controls="view-cmp">Comparer les sols</button>
+    </div>
+  </header>
+
+  <!-- SIMULATEUR -->
+  <section id="view-sim" role="tabpanel" aria-labelledby="tab-sim">
+    <div class="grid">
+      <div class="col">
+        <div class="card">
+          <div class="card-head">
+            <div><div class="step">Étape 1</div><h2>Les pièces</h2></div>
+            <button class="btn" id="addRoom" type="button">+ Ajouter une pièce</button>
+          </div>
+          <div class="rooms" id="rooms"></div>
+          <div class="row">
+            <label for="deduct">Surface à déduire (îlot, placard, baignoire…) en m²
+              <input type="number" id="deduct" min="0" step="0.1" value="0">
+            </label>
+            <label for="doors">Nombre de portes / passages
+              <input type="number" id="doors" min="0" step="1" value="2">
+            </label>
+            <label for="roomType">Type de pièce
+              <select id="roomType">
+                <option value="sejour">Séjour / salon</option>
+                <option value="chambre">Chambre</option>
+                <option value="cuisine">Cuisine</option>
+                <option value="sdb">Salle de bain / WC</option>
+                <option value="entree">Entrée / couloir</option>
+              </select>
+            </label>
+          </div>
+          <label class="check" for="heated"><input type="checkbox" id="heated"> Chauffage au sol (plancher chauffant)</label>
+        </div>
+
+        <div class="card">
+          <div><div class="step">Étape 2</div><h2>Le revêtement</h2></div>
+          <div class="types" id="types"></div>
+          <div class="alerts" id="compat"></div>
+          <div>
+            <h3 style="margin-bottom:6px">Type de pose</h3>
+            <div class="seg" id="poses"></div>
+          </div>
+          <div class="seg" id="modes" aria-label="Mode de pose"></div>
+          <div class="row">
+            <label for="chuteOverride">Chute (%) — laisser vide pour la valeur conseillée
+              <input type="number" id="chuteOverride" min="0" max="40" step="1" placeholder="auto">
+            </label>
+            <label for="ragreage">Ragréage : épaisseur (mm), 0 si sol plan
+              <input type="number" id="ragreage" min="0" max="10" step="1" value="0">
+            </label>
+          </div>
+          <details class="settings">
+            <summary>Ajuster les prix de ce revêtement</summary>
+            <div class="row" id="priceFields"></div>
+            <p class="note" style="margin-top:8px">Les prix modifiés restent enregistrés sur cet appareil. <button class="btn ghost" type="button" id="resetPrices">Revenir aux prix par défaut</button></p>
+          </details>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div><div class="step">Aperçu</div><h2>Plan 3D</h2></div>
+            <div class="seg" id="viewBtns">
+              <button type="button" id="v3d" aria-pressed="true">Vue 3D</button>
+              <button type="button" id="vTop" aria-pressed="false">Vue de dessus</button>
+              <button type="button" id="vWalls" aria-pressed="true">Murs</button>
+            </div>
+          </div>
+          <div class="plan3d" id="plan3d">
+            <p class="plan-msg" id="planMsg">Chargement du plan 3D…</p>
+          </div>
+          <p class="note">Glisser pour tourner, molette ou pincement pour zoomer. Les pièces sont posées côte à côte, à l'échelle, avec le calepinage du revêtement choisi.</p>
+        </div>
+
+        <div class="card">
+          <div><div class="step">Étape 3</div><h2>Finitions et pose</h2></div>
+          <div class="checks" id="options"></div>
+        </div>
+      </div>
+
+      <aside class="col sticky" aria-label="Budget">
+        <div class="card">
+          <div class="total">
+            <small id="totalLabel">Budget total estimé</small>
+            <span class="big" id="total">0 €</span>
+            <small id="perM2"></small>
+          </div>
+          <div class="kpis">
+            <div class="kpi"><b id="kSurf">0</b><span>m² à couvrir</span></div>
+            <div class="kpi"><b id="kOrder">0</b><span>m² commandés</span></div>
+            <div class="kpi"><b id="kPacks">0</b><span id="kPacksLbl">paquets</span></div>
+          </div>
+          <table class="lines"><tbody id="lines"></tbody></table>
+          <div class="actions">
+            <button class="btn primary" type="button" id="copyBtn">Copier le récapitulatif</button>
+            <button class="btn" type="button" id="showRecap">Voir le texte</button>
+          </div>
+          <div class="toast" id="toast" aria-live="polite"></div>
+          <textarea id="recap" readonly hidden aria-label="Récapitulatif"></textarea>
+          <p class="note">Estimation indicative. Vérifier les références, conditionnements et prix en vigueur avant de valider une commande.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- COMPARATEUR -->
+  <section id="view-cmp" role="tabpanel" aria-labelledby="tab-cmp" hidden>
+    <div class="col">
+      <div class="card">
+        <div class="cmp-filters">
+          <label for="cmpRoom" style="min-width:220px">Pièce
+            <select id="cmpRoom">
+              <option value="sejour">Séjour / salon</option>
+              <option value="chambre">Chambre</option>
+              <option value="cuisine">Cuisine</option>
+              <option value="sdb">Salle de bain / WC</option>
+              <option value="entree">Entrée / couloir</option>
+            </select>
+          </label>
+          <label class="check" for="cmpHeated" style="min-height:44px"><input type="checkbox" id="cmpHeated"> Chauffage au sol</label>
+          <label for="cmpSort" style="min-width:200px">Trier par
+            <select id="cmpSort">
+              <option value="price">Budget le plus bas</option>
+              <option value="durab">Durée de vie</option>
+              <option value="diy">Facilité de pose</option>
+              <option value="comfort">Confort</option>
+            </select>
+          </label>
+        </div>
+        <p class="note" id="cmpInfo"></p>
+        <div class="legend">
+          <span><span class="pill ok">Adapté</span></span>
+          <span><span class="pill warn">Sous conditions</span></span>
+          <span><span class="pill bad">Déconseillé</span></span>
+          <span>Notes : 1 à 3 points, 3 = meilleur</span>
+        </div>
+      </div>
+      <div class="cmp-wrap">
+        <table class="cmp">
+          <thead><tr>
+            <th>Revêtement</th><th>Pour cette pièce</th><th>Prix / m²</th><th>Budget fourniture</th><th>Avec pose pro</th>
+            <th>Eau</th><th>Rayures</th><th>Confort</th><th>Pose soi-même</th><th>Durée de vie</th><th></th>
+          </tr></thead>
+          <tbody id="cmpBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+var eur = new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+var eur2 = new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",minimumFractionDigits:2,maximumFractionDigits:2});
+var num1 = new Intl.NumberFormat("fr-FR",{maximumFractionDigits:1});
+var num2 = new Intl.NumberFormat("fr-FR",{maximumFractionDigits:2});
+
+/* ---------- Catalogue (prix indicatifs) ---------- */
+var DEFAULT_TYPES = {
+  strat:{nom:"Stratifié", prix:18, packM2:2.22, venteLabel:"paquets", poses:{droite:7,diagonale:15,chevron:18},
+    modes:["flottante"], sousCouche:true, plinthe:7, seuil:15, poseM2:20, durMin:10, durMax:20,
+    note:"Choisir AC4 minimum en pièce de vie. Version hydrofuge obligatoire en cuisine.",
+    eau:1, rayures:3, confort:1, diy:3, duree:1},
+  contre:{nom:"Parquet contrecollé", prix:45, packM2:1.9, venteLabel:"paquets", poses:{droite:7,diagonale:15,chevron:18},
+    modes:["flottante","collée"], sousCouche:true, plinthe:12, seuil:20, poseM2:30, durMin:25, durMax:40,
+    note:"Ponçable 1 à 3 fois selon l'épaisseur de la couche d'usure.",
+    eau:1, rayures:2, confort:3, diy:2, duree:3},
+  massif:{nom:"Parquet massif", prix:70, packM2:1.5, venteLabel:"paquets", poses:{droite:8,diagonale:15,chevron:20},
+    modes:["collée","clouée"], sousCouche:false, plinthe:14, seuil:22, poseM2:45, durMin:50, durMax:80,
+    note:"Acclimater les lames 48 h dans la pièce avant la pose.",
+    eau:1, rayures:2, confort:3, diy:1, duree:3},
+  lvt:{nom:"Vinyle clipsable (LVT/SPC)", prix:32, packM2:2.2, venteLabel:"paquets", poses:{droite:5,diagonale:12,chevron:15},
+    modes:["flottante"], sousCouche:false, plinthe:7, seuil:15, poseM2:22, durMin:15, durMax:25,
+    note:"Souvent sous-couche intégrée. 100 % étanche, idéal pièces humides.",
+    eau:3, rayures:3, confort:2, diy:3, duree:2},
+  rouleau:{nom:"Vinyle en rouleau", prix:15, packM2:0, venteLabel:"m²", poses:{droite:10,diagonale:10,chevron:10},
+    modes:["collée","libre"], sousCouche:false, plinthe:6, seuil:12, poseM2:15, durMin:10, durMax:15,
+    note:"Vendu au mètre linéaire en lé de 2, 3 ou 4 m : choisir la largeur qui évite un raccord.",
+    eau:3, rayures:2, confort:2, diy:3, duree:1},
+  carrelage:{nom:"Carrelage grès cérame", prix:30, packM2:1.44, venteLabel:"cartons", poses:{droite:10,diagonale:15,chevron:18},
+    modes:["collée"], sousCouche:false, plinthe:5, seuil:18, poseM2:45, durMin:30, durMax:50,
+    note:"Format 60×60 : double encollage. Prévoir des plinthes assorties.",
+    eau:3, rayures:3, confort:1, diy:1, duree:3},
+  moquette:{nom:"Moquette", prix:16, packM2:0, venteLabel:"m²", poses:{droite:10,diagonale:10,chevron:10},
+    modes:["collée","libre"], sousCouche:false, plinthe:6, seuil:12, poseM2:15, durMin:8, durMax:15,
+    note:"Isolation phonique et confort maximal, à éviter si allergies.",
+    eau:1, rayures:1, confort:3, diy:3, duree:1}
+};
+var ACC = {
+  sousCouche:{m2:15, prix:52, label:"Sous-couche isolante (rouleau 15 m²)"},
+  polyane:{m2:25, prix:18, label:"Film pare-vapeur polyane (rouleau 25 m²)"},
+  colleCarrelage:{kgM2:5, sac:25, prix:24, label:"Mortier-colle C2 (sac 25 kg)"},
+  joint:{kgM2:0.4, sac:5, prix:16, label:"Joint carrelage (sac 5 kg)"},
+  croisillons:{m2:10, prix:4, label:"Croisillons / cales autonivelantes (sachet)"},
+  colleParquet:{kgM2:1.2, seau:15, prix:95, label:"Colle parquet MS polymère (seau 15 kg)"},
+  colleSouple:{kgM2:0.35, seau:15, prix:65, label:"Colle sols souples (seau 15 kg)"},
+  ragreage:{kgM2mm:1.6, sac:25, prix:22, label:"Ragréage autolissant (sac 25 kg)"},
+  plintheLen:2.4
+};
+var ORDER = ["strat","contre","massif","lvt","rouleau","carrelage","moquette"];
+var POSE_LABEL = {droite:"Pose droite", diagonale:"Diagonale", chevron:"Chevron / point de Hongrie"};
+var ROOM_LABEL = {sejour:"séjour", chambre:"chambre", cuisine:"cuisine", sdb:"salle de bain", entree:"entrée"};
+
+/* Compatibilité pièce / plancher chauffant */
+function compat(id, room, heated){
+  var out = [];
+  var r = {
+    strat:{sdb:["bad","Le stratifié gonfle à l'eau : à éviter en salle de bain."], cuisine:["warn","Uniquement en version hydrofuge en cuisine."]},
+    contre:{sdb:["bad","Bois et projections d'eau : déconseillé en salle de bain."], cuisine:["warn","Possible avec une finition vernie et un entretien soigné."]},
+    massif:{sdb:["bad","Déconseillé en salle de bain."], cuisine:["warn","Possible avec un vernis haute résistance, prudence près de l'évier."]},
+    moquette:{sdb:["bad","Moquette et humidité : à proscrire."], cuisine:["bad","Taches et graisse : déconseillé en cuisine."], entree:["warn","S'use vite dans une entrée très passante."]},
+    rouleau:{}, lvt:{}, carrelage:{chambre:["warn","Sol froid au pied : prévoir un tapis ou un plancher chauffant."]}
+  }[id] || {};
+  if (r[room]) out.push(r[room]);
+  if (heated){
+    if (id==="massif") out.push(["warn","Plancher chauffant : seulement certaines essences et épaisseurs, en pose collée. Vérifier la fiche produit."]);
+    else if (id==="moquette") out.push(["warn","Plancher chauffant : choisir une moquette à faible résistance thermique (≤ 0,15 m².K/W)."]);
+    else if (id==="carrelage") out.push(["ok","Plancher chauffant : le carrelage est le meilleur conducteur de chaleur."]);
+    else out.push(["warn","Plancher chauffant : vérifier le logo de compatibilité sur l'emballage et utiliser une sous-couche adaptée."]);
+  }
+  return out;
+}
+function compatLevel(list){
+  var lvl="ok";
+  list.forEach(function(c){ if(c[0]==="bad") lvl="bad"; else if(c[0]==="warn" && lvl!=="bad") lvl="warn"; });
+  return lvl;
+}
+
+/* ---------- État ---------- */
+var types = JSON.parse(JSON.stringify(DEFAULT_TYPES));
+try{
+  var saved = JSON.parse(localStorage.getItem("simsols-prix")||"null");
+  if (saved) Object.keys(saved).forEach(function(k){ if(types[k]) Object.assign(types[k], saved[k]); });
+}catch(e){}
+var state = {
+  rooms:[{nom:"Séjour",L:5.2,l:4.1},{nom:"Chambre",L:3.6,l:3.2}],
+  type:"strat", pose:"droite", mode:"flottante",
+  opts:{plinthes:true, seuils:true, sousCouche:true, polyane:true, poseLvtSousCouche:false, poseePro:false}
+};
+
+function $(id){return document.getElementById(id);}
+function val(id){ var v=parseFloat($(id).value.replace(",", ".")); return isFinite(v)?v:0; }
+
+/* ---------- Calcul ---------- */
+function compute(typeId, o){
+  o = o || {};
+  var t = types[typeId];
+  var pose = o.pose || state.pose; if(!(pose in t.poses)) pose="droite";
+  var mode = o.mode || (t.modes.indexOf(state.mode)>=0 ? state.mode : t.modes[0]);
+  var surfBrute=0, perim=0;
+  state.rooms.forEach(function(r){ var L=+r.L||0, l=+r.l||0; surfBrute+=L*l; perim+=2*(L+l); });
+  var surf = Math.max(0, surfBrute - val("deduct"));
+  var doors = Math.max(0, Math.round(val("doors")));
+  var ov = $("chuteOverride").value.trim();
+  var chute = (o.useOverride!==false && ov!=="") ? Math.max(0,parseFloat(ov.replace(",", "."))||0) : t.poses[pose];
+  var besoin = surf*(1+chute/100);
+  var lines=[], packs=0, commande=0;
+  if (t.packM2>0){ packs = Math.ceil(besoin/t.packM2 - 1e-9); commande = packs*t.packM2; }
+  else { commande = Math.ceil(besoin*10)/10; packs = commande; }
+  var revet = commande*t.prix;
+  lines.push({k:"rev", label:t.nom+" — "+POSE_LABEL[pose].toLowerCase(), qty: t.packM2>0 ? packs+" "+t.venteLabel+" × "+num2.format(t.packM2)+" m² = "+num2.format(commande)+" m² · "+eur2.format(t.prix)+"/m²" : num1.format(commande)+" m² · "+eur2.format(t.prix)+"/m²", cost:revet});
+
+  var opts = state.opts;
+  if (surf>0){
+    var needSC = (mode==="flottante") && (t.sousCouche || (typeId==="lvt" && opts.poseLvtSousCouche));
+    if (needSC && opts.sousCouche){
+      var n=Math.ceil(surf*1.05/ACC.sousCouche.m2); lines.push({label:ACC.sousCouche.label, qty:n+" rouleau"+(n>1?"x":""), cost:n*ACC.sousCouche.prix});
+    }
+    if (mode==="flottante" && typeId!=="lvt" && opts.polyane){
+      var p=Math.ceil(surf*1.1/ACC.polyane.m2); lines.push({label:ACC.polyane.label, qty:p+" rouleau"+(p>1?"x":"")+" · sur chape béton", cost:p*ACC.polyane.prix});
+    }
+    if (typeId==="carrelage"){
+      var kg=surf*ACC.colleCarrelage.kgM2, s=Math.ceil(kg/ACC.colleCarrelage.sac);
+      lines.push({label:ACC.colleCarrelage.label, qty:s+" sacs · ≈ "+ACC.colleCarrelage.kgM2+" kg/m²", cost:s*ACC.colleCarrelage.prix});
+      var j=Math.ceil(surf*ACC.joint.kgM2/ACC.joint.sac); lines.push({label:ACC.joint.label, qty:j+" sac"+(j>1?"s":""), cost:j*ACC.joint.prix});
+      var c=Math.ceil(surf/ACC.croisillons.m2); lines.push({label:ACC.croisillons.label, qty:c+" sachet"+(c>1?"s":""), cost:c*ACC.croisillons.prix});
+    } else if (mode==="collée" && (typeId==="contre"||typeId==="massif")){
+      var sp=Math.ceil(surf*ACC.colleParquet.kgM2/ACC.colleParquet.seau); lines.push({label:ACC.colleParquet.label, qty:sp+" seau"+(sp>1?"x":""), cost:sp*ACC.colleParquet.prix});
+    } else if (mode==="collée" && (typeId==="rouleau"||typeId==="moquette")){
+      var ss=Math.ceil(surf*ACC.colleSouple.kgM2/ACC.colleSouple.seau); lines.push({label:ACC.colleSouple.label, qty:ss+" seau"+(ss>1?"x":""), cost:ss*ACC.colleSouple.prix});
+    }
+    var mm = Math.max(0, val("ragreage"));
+    if (mm>0){
+      var rs=Math.ceil(surf*mm*ACC.ragreage.kgM2mm/ACC.ragreage.sac); lines.push({label:ACC.ragreage.label, qty:rs+" sacs · "+mm+" mm d'épaisseur", cost:rs*ACC.ragreage.prix});
+    }
+    var ml = Math.max(0, perim - doors*0.83);
+    if (opts.plinthes && ml>0){
+      var b=Math.ceil(ml*1.1/ACC.plintheLen); lines.push({label:"Plinthes assorties (barres de 2,40 m)", qty:b+" barres · "+num1.format(ml)+" ml de murs", cost:b*t.plinthe});
+    }
+    if (opts.seuils && doors>0){
+      lines.push({label:"Barres de seuil", qty:doors+" × "+eur2.format(t.seuil), cost:doors*t.seuil});
+    }
+  }
+  var fourniture = lines.reduce(function(a,x){return a+x.cost;},0);
+  var pro = surf*t.poseM2;
+  if (o.forcePro || (o.forcePro===undefined && opts.poseePro)){
+    lines.push({k:"pro", label:"Pose par un artisan (estimation)", qty:num1.format(surf)+" m² × "+eur2.format(t.poseM2)+"/m²", cost:pro});
+  }
+  var total = lines.reduce(function(a,x){return a+x.cost;},0);
+  return {t:t, pose:pose, mode:mode, surf:surf, perim:perim, chute:chute, packs:packs, commande:commande, lines:lines, fourniture:fourniture, pro:pro, total:total};
+}
+
+/* ---------- Rendu : pièces ---------- */
+function renderRooms(){
+  var box=$("rooms"); box.innerHTML="";
+  state.rooms.forEach(function(r,i){
+    var d=document.createElement("div"); d.className="room";
+    d.innerHTML =
+      '<label class="name" for="rn'+i+'">Pièce<input type="text" id="rn'+i+'" value="'+esc(r.nom)+'"></label>'+
+      '<label for="rL'+i+'">Longueur (m)<input type="number" inputmode="decimal" id="rL'+i+'" min="0" step="0.01" value="'+r.L+'"></label>'+
+      '<label for="rl'+i+'">Largeur (m)<input type="number" inputmode="decimal" id="rl'+i+'" min="0" step="0.01" value="'+r.l+'"></label>'+
+      '<span class="area" id="ra'+i+'"></span>'+
+      '<button class="btn icon ghost" type="button" aria-label="Supprimer '+esc(r.nom)+'" data-del="'+i+'">Supprimer</button>';
+    box.appendChild(d);
+    d.querySelector("#rn"+i).addEventListener("input",function(e){r.nom=e.target.value; update();});
+    d.querySelector("#rL"+i).addEventListener("input",function(e){r.L=parseFloat(e.target.value)||0; update();});
+    d.querySelector("#rl"+i).addEventListener("input",function(e){r.l=parseFloat(e.target.value)||0; update();});
+    d.querySelector("[data-del]").addEventListener("click",function(){ state.rooms.splice(i,1); renderRooms(); update(); });
+    d.querySelector("[data-del]").disabled = state.rooms.length<=1;
+  });
+}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+
+/* ---------- Rendu : types, poses, options ---------- */
+function renderTypes(){
+  var box=$("types"); box.innerHTML="";
+  ORDER.forEach(function(id){
+    var t=types[id], b=document.createElement("button");
+    b.type="button"; b.className="type"; b.setAttribute("aria-pressed", id===state.type);
+    b.innerHTML="<strong>"+t.nom+"</strong><span>dès "+eur.format(t.prix)+"/m²</span>";
+    b.addEventListener("click",function(){ selectType(id); });
+    box.appendChild(b);
+  });
+}
+function selectType(id){
+  state.type=id; var t=types[id];
+  if (t.modes.indexOf(state.mode)<0) state.mode=t.modes[0];
+  renderTypes(); renderPoses(); renderOptions(); renderPriceFields(); update();
+}
+function renderPoses(){
+  var t=types[state.type], box=$("poses"); box.innerHTML="";
+  Object.keys(POSE_LABEL).forEach(function(p){
+    var single = (t.packM2===0);
+    if (single && p!=="droite") return;
+    var b=document.createElement("button"); b.type="button";
+    b.textContent=POSE_LABEL[p]+" · "+t.poses[p]+" % de chute";
+    b.setAttribute("aria-pressed", p===state.pose);
+    b.addEventListener("click",function(){ state.pose=p; renderPoses(); update(); });
+    box.appendChild(b);
+  });
+  if (t.packM2===0) state.pose="droite";
+  var mb=$("modes"); mb.innerHTML="";
+  if (t.modes.length>1){
+    var lab=document.createElement("span"); lab.className="note"; lab.style.alignSelf="center"; lab.textContent="Mode de pose :"; mb.appendChild(lab);
+  }
+  t.modes.forEach(function(m){
+    if (t.modes.length<2) return;
+    var b=document.createElement("button"); b.type="button"; b.textContent="Pose "+m;
+    b.setAttribute("aria-pressed", m===state.mode);
+    b.addEventListener("click",function(){ state.mode=m; renderPoses(); renderOptions(); update(); });
+    mb.appendChild(b);
+  });
+}
+function renderOptions(){
+  var t=types[state.type], box=$("options"); box.innerHTML="";
+  var list=[["plinthes","Plinthes assorties"],["seuils","Barres de seuil aux portes"]];
+  if (state.mode==="flottante"){
+    if (state.type==="lvt") list.push(["poseLvtSousCouche","Ajouter une sous-couche (lames sans sous-couche intégrée)"]);
+    if (t.sousCouche || (state.type==="lvt" && state.opts.poseLvtSousCouche)) list.push(["sousCouche","Sous-couche isolante"]);
+    if (state.type!=="lvt") list.push(["polyane","Film pare-vapeur (pose sur chape béton)"]);
+  }
+  list.push(["poseePro","Inclure la pose par un artisan"]);
+  list.forEach(function(o){
+    var l=document.createElement("label"); l.className="check"; l.setAttribute("for","opt-"+o[0]);
+    l.innerHTML='<input type="checkbox" id="opt-'+o[0]+'"'+(state.opts[o[0]]?" checked":"")+'> '+o[1];
+    l.querySelector("input").addEventListener("change",function(e){ state.opts[o[0]]=e.target.checked; if(o[0]==="poseLvtSousCouche") renderOptions(); update(); });
+    box.appendChild(l);
+  });
+}
+function renderPriceFields(){
+  var t=types[state.type], box=$("priceFields"); box.innerHTML="";
+  var f=[["prix","Prix du revêtement (€/m²)",0.1]];
+  if (t.packM2>0) f.push(["packM2","m² par "+t.venteLabel.replace(/s$/,""),0.01]);
+  f.push(["plinthe","Plinthe (€/barre 2,40 m)",0.1],["seuil","Barre de seuil (€)",0.1],["poseM2","Pose artisan (€/m²)",0.5]);
+  f.forEach(function(x){
+    var l=document.createElement("label"); l.setAttribute("for","pf-"+x[0]);
+    l.innerHTML=x[1]+'<input type="number" id="pf-'+x[0]+'" min="0" step="'+x[2]+'" value="'+t[x[0]]+'">';
+    l.querySelector("input").addEventListener("input",function(e){
+      var v=parseFloat(e.target.value); if(!isFinite(v)||v<0) return;
+      if (x[0]==="packM2" && v===0) return;
+      t[x[0]]=v; savePrices(); renderTypes(); update();
+    });
+    box.appendChild(l);
+  });
+}
+function savePrices(){
+  try{
+    var diff={};
+    ORDER.forEach(function(id){ ["prix","packM2","plinthe","seuil","poseM2"].forEach(function(k){
+      if (types[id][k]!==DEFAULT_TYPES[id][k]){ diff[id]=diff[id]||{}; diff[id][k]=types[id][k]; }
+    });});
+    localStorage.setItem("simsols-prix", JSON.stringify(diff));
+  }catch(e){}
+}
+
+/* ---------- Mise à jour ---------- */
+var last=null;
+function update(){
+  state.rooms.forEach(function(r,i){ var el=$("ra"+i); if(el) el.textContent=num2.format((+r.L||0)*(+r.l||0))+" m²"; });
+  var res=compute(state.type); last=res;
+  $("total").textContent=eur.format(res.total);
+  $("totalLabel").textContent = state.opts.poseePro ? "Budget total estimé, pose comprise" : "Budget fournitures estimé";
+  $("perM2").textContent = res.surf>0 ? "soit "+eur2.format(res.total/res.surf)+" par m² fini" : "Renseignez les dimensions d'au moins une pièce";
+  $("kSurf").textContent=num2.format(res.surf);
+  $("kOrder").textContent=num2.format(res.commande);
+  $("kPacks").textContent= res.t.packM2>0 ? res.packs : num1.format(res.commande);
+  $("kPacksLbl").textContent= res.t.packM2>0 ? res.t.venteLabel : "m² au rouleau";
+  var tb=$("lines"); tb.innerHTML="";
+  res.lines.forEach(function(x){
+    var tr=document.createElement("tr");
+    tr.innerHTML="<td>"+esc(x.label)+'<span class="qty">'+esc(x.qty)+"</span></td><td>"+eur.format(x.cost)+"</td>";
+    tb.appendChild(tr);
+  });
+  var tr=document.createElement("tr"); tr.className="sub";
+  tr.innerHTML="<td>Total</td><td>"+eur.format(res.total)+"</td>"; tb.appendChild(tr);
+
+  var al=$("compat"); al.innerHTML="";
+  var cl=compat(state.type, $("roomType").value, $("heated").checked);
+  cl.forEach(function(c){ var d=document.createElement("div"); d.className="alert "+c[0]; d.textContent=c[1]; al.appendChild(d); });
+  var n=document.createElement("p"); n.className="note"; n.textContent="Conseil : "+res.t.note+" Chute conseillée pour cette pose : "+res.t.poses[res.pose]+" %."; al.appendChild(n);
+
+  $("recap").value=recapText(res);
+  renderCmp();
+  plan.schedule();
+}
+function recapText(r){
+  var s=[];
+  s.push("PROJET SOL — "+r.t.nom+" ("+POSE_LABEL[r.pose].toLowerCase()+(r.t.modes.length>1?", pose "+r.mode:"")+")");
+  s.push("Pièces : "+state.rooms.map(function(x){return x.nom+" "+num2.format(x.L)+" × "+num2.format(x.l)+" m";}).join(" ; "));
+  s.push("Surface à couvrir : "+num2.format(r.surf)+" m² · chute "+num1.format(r.chute)+" % · à commander : "+num2.format(r.commande)+" m²");
+  s.push("");
+  r.lines.forEach(function(x){ s.push("- "+x.label+" : "+x.qty+" → "+eur.format(x.cost)); });
+  s.push("");
+  s.push("TOTAL ESTIMÉ : "+eur.format(r.total)+(r.surf>0?" (soit "+eur2.format(r.total/r.surf)+"/m²)":""));
+  s.push("Prix indicatifs, à confirmer en magasin.");
+  return s.join("\n");
+}
+
+/* ---------- Comparateur ---------- */
+function dots(n){ var h='<span class="dots" aria-label="'+n+' sur 3">'; for(var i=1;i<=3;i++) h+='<i class="'+(i<=n?"on":"")+'"></i>'; return h+"</span>"; }
+function renderCmp(){
+  var room=$("cmpRoom").value, heated=$("cmpHeated").checked, sort=$("cmpSort").value;
+  var rows=ORDER.map(function(id){
+    var r=compute(id,{pose:"droite", useOverride:false, forcePro:false});
+    var c=compat(id,room,heated);
+    return {id:id, t:types[id], r:r, c:c, lvl:compatLevel(c)};
+  });
+  var rank={ok:0,warn:1,bad:2};
+  rows.sort(function(a,b){
+    if (rank[a.lvl]!==rank[b.lvl]) return rank[a.lvl]-rank[b.lvl];
+    if (sort==="price") return a.r.total-b.r.total;
+    if (sort==="durab") return b.t.durMax-a.t.durMax;
+    if (sort==="diy") return b.t.diy-a.t.diy || a.r.total-b.r.total;
+    return b.t.confort-a.t.confort || a.r.total-b.r.total;
+  });
+  var surf=rows[0]?rows[0].r.surf:0;
+  $("cmpInfo").textContent = "Budgets calculés pour "+num2.format(surf)+" m² ("+state.rooms.length+" pièce"+(state.rooms.length>1?"s":"")+" de l'onglet Simulateur), pose droite, avec les finitions cochées. Les revêtements déconseillés pour une "+ROOM_LABEL[room]+" sont classés en bas.";
+  var tb=$("cmpBody"); tb.innerHTML="";
+  var lbl={ok:"Adapté",warn:"Sous conditions",bad:"Déconseillé"};
+  rows.forEach(function(x){
+    var tr=document.createElement("tr"); if(x.id===state.type) tr.className="current";
+    var why=x.c.filter(function(c){return c[0]!=="ok";}).map(function(c){return c[1];}).join(" ");
+    tr.innerHTML=
+      "<td><strong>"+x.t.nom+"</strong></td>"+
+      '<td><span class="pill '+x.lvl+'" title="'+esc(why)+'">'+lbl[x.lvl]+"</span>"+(why?'<div class="note" style="margin-top:4px;max-width:240px">'+esc(why)+"</div>":"")+"</td>"+
+      '<td class="num">'+eur.format(x.t.prix)+"</td>"+
+      '<td class="num">'+eur.format(x.r.fourniture)+"</td>"+
+      '<td class="num">'+eur.format(x.r.fourniture+x.r.pro)+"</td>"+
+      "<td>"+dots(x.t.eau)+"</td><td>"+dots(x.t.rayures)+"</td><td>"+dots(x.t.confort)+"</td><td>"+dots(x.t.diy)+"</td>"+
+      "<td>"+x.t.durMin+" à "+x.t.durMax+" ans</td>"+
+      '<td><button class="btn" type="button">'+(x.id===state.type?"Sélectionné":"Simuler")+"</button></td>";
+    tr.querySelector("button").addEventListener("click",function(){
+      $("roomType").value=room; $("heated").checked=heated;
+      selectType(x.id); showTab("sim"); window.scrollTo({top:0,behavior:"smooth"});
+    });
+    tb.appendChild(tr);
+  });
+}
+
+/* ---------- Plan 3D ---------- */
+var plan = (function(){
+  var api = {schedule:function(){}};
+  var box=$("plan3d"), msg=$("planMsg");
+  if (typeof THREE==="undefined"){ msg.textContent="Le plan 3D n'a pas pu se charger (bibliothèque 3D indisponible). Le calcul reste utilisable."; return api; }
+  var renderer;
+  try{ renderer=new THREE.WebGLRenderer({antialias:true}); }
+  catch(e){ msg.textContent="Le plan 3D a besoin de WebGL, qui n'est pas disponible sur cet appareil."; return api; }
+  msg.hidden=true;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  renderer.outputEncoding=THREE.sRGBEncoding;
+  box.appendChild(renderer.domElement);
+  var scene=new THREE.Scene();
+  var camera=new THREE.PerspectiveCamera(40,1,0.1,200);
+  scene.add(new THREE.HemisphereLight(0xffffff,0x9a958c,0.75));
+  var sun=new THREE.DirectionalLight(0xffffff,0.55); sun.position.set(6,12,8); scene.add(sun);
+  var group=new THREE.Group(); scene.add(group);
+  var orbit={theta:-0.6, phi:0.95, radius:14, target:new THREE.Vector3()};
+  var walls=true, texCache={};
+
+  function rng(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; var t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  function shade(hex,amt){ var c=new THREE.Color(hex); var hsl={}; c.getHSL(hsl); c.setHSL(hsl.h,hsl.s,Math.min(1,Math.max(0,hsl.l+amt))); return "#"+c.getHexString(); }
+
+  var LOOK={
+    strat:{base:"#c9a77c", kind:"plank", L:1.28, w:0.19},
+    contre:{base:"#b48553", kind:"plank", L:1.2, w:0.19},
+    massif:{base:"#93623c", kind:"plank", L:0.9, w:0.14},
+    lvt:{base:"#b3a896", kind:"plank", L:1.22, w:0.18},
+    rouleau:{base:"#cfcac1", kind:"roll"},
+    carrelage:{base:"#d9d4ca", kind:"tile", T:0.6, grout:"#a49f95"},
+    moquette:{base:"#7f8790", kind:"carpet"}
+  };
+  function makeCanvas(Pw,Ph){ var S=1024, c=document.createElement("canvas"); c.width=S; c.height=Math.round(S*Ph/Pw); return {c:c, g:c.getContext("2d"), k:S/Pw}; }
+  function grain(g,x,y,w,h,col,r){
+    g.save(); g.beginPath(); g.rect(x,y,w,h); g.clip(); g.strokeStyle=col; g.globalAlpha=0.18; g.lineWidth=1;
+    for(var i=0;i<5;i++){ var yy=y+r()*h; g.beginPath(); g.moveTo(x,yy); g.bezierCurveTo(x+w*0.3,yy+(r()-0.5)*h*0.6,x+w*0.7,yy+(r()-0.5)*h*0.6,x+w,yy+(r()-0.5)*h*0.4); g.stroke(); }
+    g.restore();
+  }
+  function texPlank(lk){
+    var Pw=2*lk.L, rows=12, Ph=rows*lk.w, cv=makeCanvas(Pw,Ph), g=cv.g, k=cv.k, r=rng(7);
+    for(var row=0;row<rows;row++){
+      var off=r()*lk.L, cols=[shade(lk.base,(r()-0.5)*0.12), shade(lk.base,(r()-0.5)*0.12)];
+      for(var i=-1;i<=2;i++){
+        var x=(off+i*lk.L)*k, y=row*lk.w*k, w=lk.L*k, h=lk.w*k, col=cols[((i%2)+2)%2];
+        g.fillStyle=col; g.fillRect(x,y,w,h); grain(g,x,y,w,h,shade(col,-0.25),rng(row*10+((i%2)+2)%2));
+        g.strokeStyle=shade(lk.base,-0.3); g.globalAlpha=0.7; g.lineWidth=2; g.strokeRect(x+1,y+1,w-2,h-2); g.globalAlpha=1;
+      }
+    }
+    return {canvas:cv.c, Pw:Pw, Ph:Ph};
+  }
+  function texChevron(base, edge, Lc, wc){
+    var c=Lc*Math.SQRT1_2, s=wc*Math.SQRT2, N=12, Pw=2*c, Ph=N*s, cv=makeCanvas(Pw,Ph), g=cv.g, k=cv.k, r=rng(3);
+    var cols=[]; for(var i=0;i<N;i++) cols.push(shade(base,(r()-0.5)*0.12));
+    for(var j=0;j<2;j++){
+      g.save(); g.beginPath(); g.rect(j*c*k,0,c*k,Ph*k); g.clip();
+      for(var q=-N-4;q<2*N+4;q++){
+        var y0 = j===0 ? q*s : q*s - c, d = j===0 ? -c : c, x0=j*c;
+        g.beginPath(); g.moveTo(x0*k,y0*k); g.lineTo((x0+c)*k,(y0+d)*k); g.lineTo((x0+c)*k,(y0+d+s)*k); g.lineTo(x0*k,(y0+s)*k); g.closePath();
+        g.fillStyle=cols[((q%N)+N)%N]; g.fill(); g.strokeStyle=edge; g.lineWidth=2; g.globalAlpha=0.7; g.stroke(); g.globalAlpha=1;
+      }
+      g.restore();
+    }
+    return {canvas:cv.c, Pw:Pw, Ph:Ph};
+  }
+  function texTile(lk){
+    var P=2*lk.T, cv=makeCanvas(P,P), g=cv.g, k=cv.k, r=rng(11);
+    g.fillStyle=lk.grout; g.fillRect(0,0,P*k,P*k);
+    for(var a=0;a<2;a++) for(var b=0;b<2;b++){
+      g.fillStyle=shade(lk.base,(r()-0.5)*0.05); g.fillRect(a*lk.T*k+3,b*lk.T*k+3,lk.T*k-6,lk.T*k-6);
+      g.globalAlpha=0.06; for(var n=0;n<120;n++){ g.fillStyle=r()<0.5?"#000":"#fff"; g.fillRect(a*lk.T*k+r()*lk.T*k,b*lk.T*k+r()*lk.T*k,3,3);} g.globalAlpha=1;
+    }
+    return {canvas:cv.c, Pw:P, Ph:P};
+  }
+  function texRoll(lk){
+    var P=1.2, cv=makeCanvas(P,P), g=cv.g, k=cv.k, r=rng(5);
+    g.fillStyle=lk.base; g.fillRect(0,0,P*k,P*k);
+    g.globalAlpha=0.08; for(var n=0;n<1500;n++){ g.fillStyle=r()<0.5?"#000":"#fff"; g.fillRect(r()*P*k,r()*P*k,4,4);} g.globalAlpha=1;
+    g.strokeStyle=shade(lk.base,-0.12); g.lineWidth=2;
+    for(var i=0;i<=4;i++){ g.beginPath(); g.moveTo(i*0.3*k,0); g.lineTo(i*0.3*k,P*k); g.stroke(); g.beginPath(); g.moveTo(0,i*0.3*k); g.lineTo(P*k,i*0.3*k); g.stroke(); }
+    return {canvas:cv.c, Pw:P, Ph:P};
+  }
+  function texCarpet(lk){
+    var P=1, cv=makeCanvas(P,P), g=cv.g, r=rng(9);
+    g.fillStyle=lk.base; g.fillRect(0,0,1024,1024);
+    for(var n=0;n<9000;n++){ g.fillStyle=shade(lk.base,(r()-0.5)*0.22); g.fillRect(r()*1024,r()*1024,3,3); }
+    return {canvas:cv.c, Pw:P, Ph:P};
+  }
+  function getTex(id,pose){
+    var key=id+"|"+(pose==="chevron"?"chevron":"std");
+    if (texCache[key]) return texCache[key];
+    var lk=LOOK[id], t;
+    if (pose==="chevron" && lk.kind==="plank") t=texChevron(lk.base, shade(lk.base,-0.3), 0.6, 0.1);
+    else if (pose==="chevron" && lk.kind==="tile") t=texChevron(lk.base, lk.grout, 0.6, 0.15);
+    else if (lk.kind==="plank") t=texPlank(lk);
+    else if (lk.kind==="tile") t=texTile(lk);
+    else if (lk.kind==="roll") t=texRoll(lk);
+    else t=texCarpet(lk);
+    var tex=new THREE.CanvasTexture(t.canvas);
+    tex.wrapS=tex.wrapT=THREE.RepeatWrapping; tex.encoding=THREE.sRGBEncoding;
+    tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+    texCache[key]={tex:tex, Pw:t.Pw, Ph:t.Ph};
+    return texCache[key];
+  }
+  function label(text){
+    var c=document.createElement("canvas"); c.width=512; c.height=128; var g=c.getContext("2d");
+    g.fillStyle="rgba(255,255,255,0.92)"; var w=Math.min(500, g.measureText?0:0);
+    g.font="600 44px Figtree, sans-serif"; w=Math.min(500,g.measureText(text).width+40);
+    g.beginPath(); if(g.roundRect) g.roundRect(256-w/2,24,w,80,40); else g.rect(256-w/2,24,w,80); g.fill();
+    g.fillStyle="#1d2529"; g.textAlign="center"; g.textBaseline="middle"; g.fillText(text,256,66);
+    var tex=new THREE.CanvasTexture(c); tex.encoding=THREE.sRGBEncoding;
+    var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex, depthTest:false}));
+    sp.scale.set(2.4,0.6,1); sp.renderOrder=10; return sp;
+  }
+  function clear(){
+    while(group.children.length){
+      var o=group.children.pop();
+      if(o.geometry) o.geometry.dispose();
+      if(o.material){ if(o.material.map && o.isSprite) o.material.map.dispose(); o.material.dispose(); }
+    }
+  }
+  function build(){
+    clear();
+    var res=last; if(!res) return;
+    var id=state.type, pose=res.pose, T=getTex(id,pose);
+    var ang = pose==="diagonale" ? Math.PI/4 : 0, ca=Math.cos(ang), sa=Math.sin(ang);
+    var wallT=0.1, wallH=walls?2.5:0, gap=wallT;
+    var css=getComputedStyle(document.documentElement);
+    scene.background=new THREE.Color(css.getPropertyValue("--bg").trim()||"#f3f2ee");
+    var wallMat=new THREE.MeshLambertMaterial({color:0xf2efe9, transparent:true, opacity:0.55});
+    var plMat=new THREE.MeshLambertMaterial({color:0xfbfaf7});
+    var x=0, maxW=0, rooms=state.rooms.filter(function(r){return (+r.L)>0 && (+r.l)>0;});
+    var totalLen=rooms.reduce(function(a,r){return a+(+r.L);},0)+gap*Math.max(0,rooms.length-1);
+    rooms.forEach(function(r){ maxW=Math.max(maxW,+r.l); });
+    var x0=-totalLen/2;
+    rooms.forEach(function(r){
+      var L=+r.L, l=+r.l, cx=x0+x+L/2, cz=0;
+      var geo=new THREE.PlaneGeometry(L,l,1,1); geo.rotateX(-Math.PI/2);
+      var pos=geo.attributes.position, uv=geo.attributes.uv;
+      for(var i=0;i<pos.count;i++){
+        var wx=pos.getX(i)+cx, wz=pos.getZ(i)+cz;
+        var u=(wx*ca - wz*sa)/T.Pw, v=(wx*sa + wz*ca)/T.Ph;
+        uv.setXY(i,u,-v);
+      }
+      var floor=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({map:T.tex}));
+      floor.position.set(cx,0,cz); group.add(floor);
+      // sous-face
+      var slab=new THREE.Mesh(new THREE.BoxGeometry(L+2*wallT,0.12,l+2*wallT), new THREE.MeshLambertMaterial({color:0x8d8a84}));
+      slab.position.set(cx,-0.061,cz); group.add(slab);
+      if (walls){
+        [[L+2*wallT,wallT,cx,cz-l/2-wallT/2],[L+2*wallT,wallT,cx,cz+l/2+wallT/2],[wallT,l,cx-L/2-wallT/2,cz],[wallT,l,cx+L/2+wallT/2,cz]].forEach(function(wd){
+          var m=new THREE.Mesh(new THREE.BoxGeometry(wd[0],wallH,wd[1]),wallMat.clone()); m.position.set(wd[2],wallH/2,wd[3]); group.add(m);
+        });
+      }
+      if (state.opts.plinthes){
+        var ph=0.07, pt=0.015;
+        [[L,pt,cx,cz-l/2+pt/2],[L,pt,cx,cz+l/2-pt/2],[pt,l,cx-L/2+pt/2,cz],[pt,l,cx+L/2-pt/2,cz]].forEach(function(p){
+          var m=new THREE.Mesh(new THREE.BoxGeometry(p[0],ph,p[1]),plMat.clone()); m.position.set(p[2],ph/2,p[3]); group.add(m);
+        });
+      }
+      var sp=label((r.nom||"Pièce")+" · "+num1.format(L*l)+" m²"); sp.position.set(cx, walls?2.9:0.6, cz); group.add(sp);
+      x+=L+gap;
+    });
+    var span=Math.max(totalLen,maxW,3);
+    orbit.radius=Math.max(orbit.minR||0, span*1.35+3);
+    orbit.minR=0;
+    render();
+  }
+  var fitDone=false;
+  function render(){
+    var p=orbit.phi, t=orbit.theta, R=orbit.radius;
+    camera.position.set(orbit.target.x+R*Math.sin(p)*Math.sin(t), orbit.target.y+R*Math.cos(p), orbit.target.z+R*Math.sin(p)*Math.cos(t));
+    camera.lookAt(orbit.target);
+    renderer.render(scene,camera);
+  }
+  function resize(){
+    var w=box.clientWidth, h=box.clientHeight; if(!w||!h) return;
+    renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); render();
+  }
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(box); else window.addEventListener("resize",resize);
+
+  // Interaction : rotation, zoom
+  var pts={}, lastDist=0, userZoom=null;
+  var cvs=renderer.domElement;
+  cvs.addEventListener("pointerdown",function(e){ cvs.setPointerCapture(e.pointerId); pts[e.pointerId]={x:e.clientX,y:e.clientY}; });
+  cvs.addEventListener("pointermove",function(e){
+    if(!pts[e.pointerId]) return;
+    var ids=Object.keys(pts);
+    if(ids.length===1){
+      var dx=e.clientX-pts[e.pointerId].x, dy=e.clientY-pts[e.pointerId].y;
+      orbit.theta-=dx*0.008; orbit.phi=Math.min(1.45,Math.max(0.05,orbit.phi-dy*0.008));
+      setPressed(null); render();
+    }
+    pts[e.pointerId]={x:e.clientX,y:e.clientY};
+    if(ids.length===2){
+      var a=pts[ids[0]], b=pts[ids[1]], d=Math.hypot(a.x-b.x,a.y-b.y);
+      if(lastDist){ zoom(lastDist/d); } lastDist=d;
+    }
+  });
+  function up(e){ delete pts[e.pointerId]; lastDist=0; }
+  cvs.addEventListener("pointerup",up); cvs.addEventListener("pointercancel",up);
+  cvs.addEventListener("wheel",function(e){ e.preventDefault(); zoom(e.deltaY>0?1.1:0.9); },{passive:false});
+  function zoom(f){ orbit.radius=Math.min(80,Math.max(3,orbit.radius*f)); render(); }
+
+  function setPressed(which){ $("v3d").setAttribute("aria-pressed",which==="3d"); $("vTop").setAttribute("aria-pressed",which==="top"); }
+  $("v3d").addEventListener("click",function(){ orbit.theta=-0.6; orbit.phi=0.95; setPressed("3d"); render(); });
+  $("vTop").addEventListener("click",function(){ orbit.theta=0; orbit.phi=0.05; setPressed("top"); render(); });
+  $("vWalls").addEventListener("click",function(){ walls=!walls; this.setAttribute("aria-pressed",walls); var r=orbit.radius; build(); orbit.radius=r; render(); });
+
+  var pending=false, lastKey="";
+  api.schedule=function(){
+    if(pending) return; pending=true;
+    requestAnimationFrame(function(){
+      pending=false;
+      var key=JSON.stringify(state.rooms.map(function(r){return [r.L,r.l];}));
+      var keepR = key===lastKey ? orbit.radius : null; lastKey=key;
+      build(); if(keepR) { orbit.radius=keepR; render(); }
+      resize();
+    });
+  };
+  return api;
+})();
+
+/* ---------- Onglets ---------- */
+function showTab(which){
+  var sim=which==="sim";
+  $("tab-sim").setAttribute("aria-selected",sim); $("tab-cmp").setAttribute("aria-selected",!sim);
+  $("view-sim").hidden=!sim; $("view-cmp").hidden=sim;
+  if(!sim){ $("cmpRoom").value=$("roomType").value; $("cmpHeated").checked=$("heated").checked; renderCmp(); }
+}
+$("tab-sim").addEventListener("click",function(){showTab("sim");});
+$("tab-cmp").addEventListener("click",function(){showTab("cmp");});
+
+/* ---------- Événements ---------- */
+$("addRoom").addEventListener("click",function(){ state.rooms.push({nom:"Pièce "+(state.rooms.length+1),L:3,l:3}); renderRooms(); update(); });
+["deduct","doors","chuteOverride","ragreage"].forEach(function(id){ $(id).addEventListener("input",update); });
+["roomType","heated"].forEach(function(id){ $(id).addEventListener("change",update); });
+["cmpRoom","cmpHeated","cmpSort"].forEach(function(id){ $(id).addEventListener("change",renderCmp); });
+$("resetPrices").addEventListener("click",function(){
+  types=JSON.parse(JSON.stringify(DEFAULT_TYPES)); try{localStorage.removeItem("simsols-prix");}catch(e){}
+  renderTypes(); renderPriceFields(); update();
+});
+$("showRecap").addEventListener("click",function(){ var t=$("recap"); t.hidden=!t.hidden; this.textContent=t.hidden?"Voir le texte":"Masquer le texte"; });
+$("copyBtn").addEventListener("click",function(){
+  var txt=$("recap").value;
+  function fallback(){ var t=$("recap"); t.hidden=false; $("showRecap").textContent="Masquer le texte"; t.focus(); t.select(); $("toast").textContent="Texte sélectionné : faites Ctrl+C (ou Copier) pour le copier."; }
+  try{
+    navigator.clipboard.writeText(txt).then(function(){ $("toast").textContent="Récapitulatif copié, prêt à coller dans un mail ou un devis."; }, fallback);
+  }catch(e){ fallback(); }
+});
+
+renderRooms(); renderTypes(); renderPoses(); renderOptions(); renderPriceFields(); update();
+})();
+</script>
+</body>
+</html>
