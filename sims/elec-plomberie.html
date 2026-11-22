@@ -1,0 +1,798 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Calculettes Élec & Plomberie</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout : même gabarit que les calculettes Confort — onglets groupés Électricité / Plomberie ; chaque outil = saisie à gauche, résultat à droite */
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --ink:#16202b; --muted:#5b6876; --line:#dbe1e7;
+  --volt:#c98a0b; --water:#2f6fb3; --hot:#d2541c; --good:#1f8a5b; --warn:#b7791f; --bad:#c0392b; --chipbg:#eaf0f5;
+  --display:"Archivo Narrow","Arial Narrow",sans-serif;
+  --body:"Public Sans",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f151c; --panel:#17202a; --ink:#e7edf3; --muted:#9aa7b4; --line:#2a3542;
+  --volt:#e8b33c; --water:#6aa6e6; --hot:#f07a43; --good:#4cc08a; --warn:#e0a84a; --bad:#ef6f5e; --chipbg:#1f2b37; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f151c; --panel:#17202a; --ink:#e7edf3; --muted:#9aa7b4; --line:#2a3542;
+  --volt:#e8b33c; --water:#6aa6e6; --hot:#f07a43; --good:#4cc08a; --warn:#e0a84a; --bad:#ef6f5e; --chipbg:#1f2b37; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 40px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:20px}
+header{display:grid;gap:6px}
+.therm{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--volt),var(--water));max-width:180px}
+h1{font-family:var(--display);font-size:clamp(28px,4vw,40px);line-height:1.05;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--muted);max-width:65ch}
+nav{display:grid;gap:8px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.tg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tg>span{font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;font-size:12.5px;font-weight:600;width:96px}
+.tg.e>span{color:var(--volt)} .tg.p>span{color:var(--water)} .tg.q>span{color:var(--muted)}
+.tg a{font-family:var(--display);font-weight:600;font-size:16px;text-decoration:none;color:var(--muted);padding:7px 13px;border-radius:6px;border:1px solid transparent}
+.tg a[aria-current=page]{color:var(--panel);background:var(--ink)}
+.tg a:not([aria-current]):hover{border-color:var(--line);color:var(--ink)}
+@media (max-width:520px){.tg>span{width:100%}}
+.grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}}
+.one{display:grid;gap:20px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:14px;min-width:0}
+.lbl{font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;font-size:13px;color:var(--muted);font-weight:600}
+.field{display:grid;gap:6px}
+input[type=number],select{width:100%;box-sizing:border-box;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+input:focus-visible,select:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(--water);outline-offset:2px}
+.hint{font-size:12.5px;color:var(--muted)}
+.res{display:grid;gap:16px;min-width:0}
+.hero{display:grid;gap:4px}
+.huge{font-family:var(--mono);font-size:clamp(30px,5.5vw,48px);line-height:1.05;font-variant-numeric:tabular-nums}
+.sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:520px){.sum{grid-template-columns:1fr}}
+.sum div{display:grid;gap:2px}
+.big{font-family:var(--mono);font-size:22px;font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:9px 8px;border-top:1px solid var(--line);vertical-align:top}
+th{font-family:var(--display);font-weight:600;color:var(--muted);text-transform:uppercase;font-size:13px;letter-spacing:.05em;border-top:0}
+td.n{font-family:var(--mono);white-space:nowrap}
+tr.on td{background:var(--chipbg)}
+.tbl{overflow-x:auto}
+.good{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+.note{font-size:12.5px;color:var(--muted);max-width:75ch;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13px;padding:3px 9px;border-radius:999px;background:var(--chipbg);color:var(--ink)}
+.chip.good{color:var(--good)} .chip.warn{color:var(--warn)} .chip.bad{color:var(--bad)} .chip.hot{color:var(--hot)}
+#g_list select,#g_list input{padding:6px 8px;font-size:14px}
+#g_list td{vertical-align:middle}
+#g_list td:first-child{min-width:180px}
+.pick.x{padding:4px 9px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted)}
+.legend b{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.rows{display:grid;gap:6px}
+.mrow{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:3px;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.mod{height:46px;border-radius:3px;font:500 10.5px var(--mono);display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;color:var(--panel);overflow:hidden}
+.mod.free{background:transparent;border:1px dashed var(--line);color:var(--muted)}
+.ids{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.idc{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;gap:4px;font-size:13.5px}
+.idc b{font-family:var(--display);font-size:15px}
+.rooms{display:grid;gap:8px}
+.room{display:grid;grid-template-columns:minmax(0,1fr) 70px 70px;gap:8px;align-items:center;font-size:14px}
+.room input{padding:6px 8px}
+.room.h{font-size:12px;color:var(--muted)}
+.pick{font:inherit;font-size:13.5px;padding:6px 11px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--ink);cursor:pointer}
+.pick[aria-pressed=true]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.picks{display:flex;flex-wrap:wrap;gap:6px}
+.mx td,.mx th{text-align:center}
+.mx td:first-child,.mx th:first-child{text-align:left}
+.ok{color:var(--good);font-weight:600} .no{color:var(--bad);font-weight:600} .cond{color:var(--warn);font-weight:600}
+.vsch svg{display:block;width:100%;height:auto;max-width:520px}
+.vsch text{font:600 13px var(--display);fill:var(--ink)}
+.vsch .sm{font:12px var(--body);fill:var(--muted)}
+.slope svg{display:block;width:100%;height:auto}
+.slope text{font:500 12px var(--mono);fill:var(--muted)}
+.qz{display:grid;gap:14px}
+.q{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:8px}
+.q:first-child{border-top:0;padding-top:0}
+.q p{margin:0;font-weight:600}
+.q .opts{display:flex;flex-wrap:wrap;gap:6px}
+.q button{font:inherit;font-size:14px;padding:7px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer;text-align:left}
+.q button.right{border-color:var(--good);color:var(--good);font-weight:600}
+.q button.wrong{border-color:var(--bad);color:var(--bad);text-decoration:line-through}
+.q button:disabled{cursor:default}
+.q .ex{font-size:13px;color:var(--muted);margin:0}
+.btn{font:inherit;font-size:14px;padding:8px 12px;border:1px dashed var(--line);background:transparent;color:var(--ink);border-radius:6px;cursor:pointer;justify-self:start}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="therm" aria-hidden="true"></div>
+    <h1>Calculettes rayon Élec &amp; Plomberie</h1>
+    <p>Les règles et repères à connaître pour conseiller un client en rayon, avec des outils de calcul rapides. Valeurs issues de la norme NF C 15-100 et des usages de pose : ordres de grandeur à confirmer avec la notice du fabricant ou un professionnel.</p>
+  </header>
+
+  <nav aria-label="Outils">
+    <div class="tg e"><span>Électricité</span>
+      <a href="#circuits" data-t="circuits">Circuits &amp; protections</a>
+      <a href="#tableau" data-t="tableau">Tableau électrique</a>
+      <a href="#charge" data-t="charge">Calibre des différentiels</a>
+      <a href="#pieces" data-t="pieces">Pièce par pièce</a>
+      <a href="#cable" data-t="cable">Section de câble</a>
+      <a href="#sdb" data-t="sdb">Salle de bain</a>
+    </div>
+    <div class="tg p"><span>Plomberie</span>
+      <a href="#alim" data-t="alim">Alimentation eau</a>
+      <a href="#evac" data-t="evac">Évacuation</a>
+      <a href="#raccords" data-t="raccords">Raccords &amp; pression</a>
+    </div>
+    <div class="tg q"><span>S'entraîner</span>
+      <a href="#quiz" data-t="quiz">Test express</a>
+    </div>
+  </nav>
+
+  <!-- CIRCUITS -->
+  <section id="v-circuits" class="grid" hidden>
+    <form class="panel" onsubmit="return false">
+      <span class="lbl">Le client veut alimenter…</span>
+      <div class="field"><label for="c_sel">Type de circuit</label><select id="c_sel"></select></div>
+      <p class="hint">Sélectionnez le besoin : l'outil donne la section de fil, le calibre du disjoncteur et le différentiel qui protège le circuit.</p>
+      <span class="lbl">Couleurs des fils</span>
+      <div class="chips">
+        <span class="chip">Phase : rouge, marron, noir</span>
+        <span class="chip" style="color:var(--water)">Neutre : bleu</span>
+        <span class="chip good">Terre : vert/jaune</span>
+      </div>
+      <p class="hint">Le vert/jaune est réservé à la terre et le bleu au neutre, jamais autre chose.</p>
+    </form>
+    <div class="res">
+      <div class="panel">
+        <div class="sum">
+          <div><span class="lbl">Section du fil</span><span class="huge" id="c_s"></span></div>
+          <div><span class="lbl">Disjoncteur</span><span class="huge" id="c_d"></span></div>
+          <div><span class="lbl">Différentiel 30 mA</span><span class="huge" id="c_id"></span></div>
+        </div>
+        <div class="chips" id="c_chips"></div>
+        <p class="note" id="c_note"></p>
+      </div>
+      <div class="panel">
+        <span class="lbl">Mémo complet</span>
+        <div class="tbl"><table><thead><tr><th>Circuit</th><th>Section</th><th>Disjoncteur</th><th>Limite</th><th>ID</th></tr></thead><tbody id="c_tab"></tbody></table></div>
+        <p class="note">Repères NF C 15-100 (version 2024 pour les nombres de prises ; l'ancienne règle était 5 prises en 1,5 mm² et 8 en 2,5 mm²). Pour une PAC, une clim ou une borne de recharge, suivre la notice du fabricant.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABLEAU -->
+  <section id="v-tableau" class="grid" hidden>
+    <form class="panel" onsubmit="return false">
+      <span class="lbl">Le logement</span>
+      <div class="field"><label for="b_surf">Surface habitable (m²)</label><input type="number" id="b_surf" value="100" min="10" max="400"></div>
+      <span class="lbl">Circuits à protéger</span>
+      <div class="field"><label for="b_ecl">Circuits éclairage</label><input type="number" id="b_ecl" value="4" min="0" max="20"></div>
+      <div class="field"><label for="b_pr">Circuits prises</label><input type="number" id="b_pr" value="6" min="0" max="30"></div>
+      <div class="field"><label for="b_a">Circuits sur ID type A</label><input type="number" id="b_a" value="2" min="0" max="16">
+        <span class="hint">Plaque de cuisson, lave-linge, prise de recharge voiture.</span></div>
+      <div class="field"><label for="b_sp">Autres circuits spécialisés</label><input type="number" id="b_sp" value="4" min="0" max="20">
+        <span class="hint">Four, lave-vaisselle, sèche-linge, congélateur, chauffe-eau…</span></div>
+      <div class="field"><label for="b_ch">Circuits chauffage</label><input type="number" id="b_ch" value="3" min="0" max="20"></div>
+      <div class="field"><label for="b_vr">Volets, VMC, extérieur</label><input type="number" id="b_vr" value="2" min="0" max="20"></div>
+      <div class="field"><label for="b_hc">Contacteur heures creuses</label><select id="b_hc"><option value="1" selected>Oui (chauffe-eau)</option><option value="0">Non</option></select></div>
+    </form>
+    <div class="res">
+      <div class="panel">
+        <div class="sum">
+          <div><span class="lbl">Interrupteurs différentiels</span><span class="big" id="b_nid"></span></div>
+          <div><span class="lbl">Modules utilisés</span><span class="big" id="b_mod"></span></div>
+          <div><span class="lbl">Coffret conseillé</span><span class="big" id="b_rg"></span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <span class="lbl">Le tableau, rangée par rangée (13 modules)</span>
+        <div class="rows" id="b_rows"></div>
+        <div class="legend">
+          <span><b style="background:var(--ink)"></b>Interrupteur différentiel</span>
+          <span><b style="background:var(--volt)"></b>Éclairage</span>
+          <span><b style="background:var(--water)"></b>Prises</span>
+          <span><b style="background:var(--hot)"></b>Spécialisés / chauffage</span>
+          <span><b style="background:var(--good)"></b>Contacteur</span>
+          <span><b style="border:1px dashed var(--muted)"></b>Réserve</span>
+        </div>
+      </div>
+      <div class="panel">
+        <span class="lbl">Répartition par différentiel</span>
+        <div class="ids" id="b_ids"></div>
+        <p class="note">Règles appliquées : au moins 1 ID 30 mA type A, et selon la surface 1 ID type AC 25 A (jusqu'à 35 m²), 2 ID type AC 40 A (35 à 100 m²) ou 3 (au-delà). Pas plus de 8 circuits par ID. Les éclairages sont répartis sur plusieurs ID pour ne pas plonger le logement dans le noir en cas de défaut. Garder au moins 20 % de modules libres. Un module = 18 mm, un ID en prend 2.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CALIBRE DES DIFFÉRENTIELS -->
+  <section id="v-charge" class="grid" hidden>
+    <form class="panel" onsubmit="return false">
+      <span class="lbl">Abonnement du client</span>
+      <div class="field"><label for="g_ab">Puissance souscrite (monophasé)</label>
+        <select id="g_ab"><option value="15">3 kVA · disjoncteur de branchement 15 A</option><option value="30">6 kVA · 30 A</option><option value="45" selected>9 kVA · 45 A</option><option value="60">12 kVA · 60 A</option></select></div>
+      <span class="lbl">Comment on calcule</span>
+      <div class="field">
+        <span><b>Règle de l'aval</b> : pour chaque différentiel, on additionne les calibres des disjoncteurs qu'il protège, avec un coefficient.</span>
+        <div class="chips"><span class="chip hot">× 1 : chauffage, chauffe-eau, recharge voiture</span><span class="chip">× 0,5 : tous les autres circuits</span></div>
+        <span class="hint">Le calibre de l'interrupteur différentiel doit être au moins égal au total. On prend le calibre standard juste au-dessus : 25, 40 ou 63 A.</span>
+      </div>
+      <div class="field">
+        <span><b>Règle de l'amont</b> : sans calcul, prendre un calibre au moins égal au disjoncteur de branchement. Plus simple, mais souvent plus gros que nécessaire.</span>
+      </div>
+      <p class="hint">Exemple chargé : maison de 100 m² chauffée à l'électricité. Modifiez les circuits sous chaque différentiel.</p>
+    </form>
+    <div class="res">
+      <div class="panel">
+        <div class="sum">
+          <div><span class="lbl">Différentiels</span><span class="big" id="g_n"></span></div>
+          <div><span class="lbl">Charge totale calculée</span><span class="big" id="g_tot"></span></div>
+          <div><span class="lbl">Règle de l'amont</span><span class="big" id="g_am"></span></div>
+        </div>
+        <p class="note" id="g_sum"></p>
+      </div>
+      <div id="g_list" class="res"></div>
+      <button type="button" class="btn" id="g_addid">+ Ajouter un différentiel</button>
+      <p class="note">Méthode NF C 15-100 (règles de l'amont et de l'aval), telle que présentée par Legrand et EDF. Il suffit de respecter l'une des deux règles. Au-delà de 63 A, répartir les circuits sur un différentiel de plus. Rappels : 8 circuits maximum par différentiel, type A pour plaque de cuisson, lave-linge et recharge voiture, et chaque point de recharge sur son propre différentiel 30 mA.</p>
+    </div>
+  </section>
+
+  <!-- PIÈCES -->
+  <section id="v-pieces" class="grid" hidden>
+    <form class="panel" onsubmit="return false">
+      <span class="lbl">Composition du logement</span>
+      <div class="rooms" id="p_rooms"></div>
+      <p class="hint">Exemple chargé : un T4. Changez le nombre de pièces et la surface du séjour et de la cuisine.</p>
+    </form>
+    <div class="res">
+      <div class="panel">
+        <div class="sum">
+          <div><span class="lbl">Prises 16 A minimum</span><span class="big" id="p_pr"></span></div>
+          <div><span class="lbl">Points lumineux</span><span class="big" id="p_pl"></span></div>
+          <div><span class="lbl">Circuits estimés</span><span class="big" id="p_ci"></span></div>
+        </div>
+        <p class="note" id="p_sum"></p>
+      </div>
+      <div class="panel">
+        <span class="lbl">Minimum par pièce</span>
+        <div class="tbl"><table><thead><tr><th>Pièce</th><th>Prises 16 A</th><th>Éclairage</th><th>RJ45</th><th>À prévoir</th></tr></thead><tbody id="p_tab"></tbody></table></div>
+        <p class="note">Minimums NF C 15-100. Séjour : 5 prises jusqu'à 28 m², 7 au-delà. Cuisine : 6 prises dont 4 au-dessus du plan de travail (3 si la cuisine fait 4 m² ou moins). Une prise double compte pour 2 socles. Les prises de la cuisine sont sur un circuit à part. Vérifier les évolutions de la norme en vigueur avant un chantier neuf.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CÂBLE -->
+  <section id="v-cable" class="grid" hidden>
+    <form class="panel" onsubmit="return false">
+      <span class="lbl">L'appareil à alimenter</span>
+      <div class="field"><label for="k_p">Puissance (W)</label><input type="number" id="k_p" value="3500" step="100" min="0"></div>
+      <div class="field"><label for="k_l">Longueur du câble, tableau → appareil (m)</label><input type="number" id="k_l" value="25" min="1" max="200"></div>
+      <div class="field"><label for="k_u">Usage</label>
+        <select id="k_u"><option value="3">Éclairage (chute max 3 %)</option><option value="5" selected>Autres usages (chute max 5 %)</option></select></div>
+      <p class="hint">Monophasé 230 V, câble cuivre. Utile pour un abri de jardin, un garage éloigné ou un gros radiateur.</p>
+    </form>
+    <div class="res">
+      <div class="panel hero">
+        <span class="lbl">Section conseillée</span>
+        <span class="huge" id="k_res"></span>
+        <span class="hint" id="k_txt"></span>
+      </div>
+      <div class="panel">
+        <span class="lbl">Comparatif des sections</span>
+        <div class="tbl"><table><thead><tr><th>Section</th><th>Disjoncteur max</th><th>Chute de tension</th><th>Verdict</th></tr></thead><tbody id="k_tab"></tbody></table></div>
+        <p class="note">Intensité = puissance ÷ 230 V. Chute de tension ≈ 2 × 0,0225 × longueur × intensité ÷ section. Le disjoncteur protège le câble : il ne doit jamais dépasser le calibre admis par la section. En extérieur enterré : câble U1000 R2V sous gaine TPC rouge, à 50 cm de profondeur au moins, grillage avertisseur rouge au-dessus.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SDB -->
+  <section id="v-sdb" class="grid" hidden>
+    <div class="panel">
+      <span class="lbl">Les volumes</span>
+      <div class="vsch" aria-label="Schéma des volumes autour d'une baignoire">
+        <svg viewBox="0 0 400 300" role="img">
+          <rect x="0" y="0" width="400" height="300" fill="var(--bg)"/>
+          <rect x="250" y="20" width="140" height="250" fill="var(--chipbg)" stroke="var(--line)"/>
+          <rect x="130" y="45" width="120" height="225" fill="var(--warn)" opacity=".28"/>
+          <rect x="20" y="45" width="110" height="225" fill="var(--water)" opacity=".28"/>
+          <rect x="20" y="215" width="110" height="55" fill="var(--water)" opacity=".6"/>
+          <path d="M20 215 h110 v55 h-110 z" fill="none" stroke="var(--ink)" stroke-width="2"/>
+          <line x1="10" y1="270" x2="390" y2="270" stroke="var(--ink)" stroke-width="2"/>
+          <text x="75" y="248" text-anchor="middle" fill="var(--ink)">V0</text>
+          <text x="75" y="130" text-anchor="middle">V1</text>
+          <text x="190" y="130" text-anchor="middle">V2</text>
+          <text x="320" y="130" text-anchor="middle">Hors volume</text>
+          <text class="sm" x="75" y="150" text-anchor="middle">jusqu'à 2,25 m</text>
+          <text class="sm" x="190" y="150" text-anchor="middle">60 cm autour</text>
+          <text class="sm" x="75" y="292" text-anchor="middle">baignoire / receveur</text>
+          <line x1="20" y1="45" x2="250" y2="45" stroke="var(--muted)" stroke-dasharray="4 4"/>
+          <text class="sm" x="256" y="49">2,25 m</text>
+        </svg>
+      </div>
+      <p class="note">V0 : l'intérieur de la baignoire ou du receveur. V1 : au-dessus, jusqu'à 2,25 m du sol. V2 : une bande de 60 cm autour du V1. Pour une douche à l'italienne sans receveur, le V1 s'étend sur 1,20 m autour du pommeau fixe.</p>
+    </div>
+    <div class="res">
+      <div class="panel">
+        <span class="lbl">Ce matériel, où peut-il aller ?</span>
+        <div class="picks" id="s_picks"></div>
+        <div class="tbl"><table class="mx"><thead><tr><th>Équipement</th><th>V0</th><th>V1</th><th>V2</th><th>Hors vol.</th></tr></thead><tbody id="s_tab"></tbody></table></div>
+        <p class="note" id="s_note"></p>
+      </div>
+      <div class="panel">
+        <span class="lbl">Indices à vérifier sur l'étiquette</span>
+        <div class="chips">
+          <span class="chip">V0 : IPX7</span><span class="chip">V1 : IPX4 (IPX5 si jets)</span><span class="chip">V2 : IPX4</span><span class="chip">Hors volume : IPX1 conseillé</span>
+        </div>
+        <p class="note">TBTS 12 V = très basse tension de sécurité, avec transformateur placé hors volumes. Classe II = symbole double carré, pas de terre. Toute la salle de bain est protégée par un différentiel 30 mA, et la liaison équipotentielle supplémentaire relie les masses métalliques (canalisations, bâti de baignoire) à la terre.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALIMENTATION -->
+  <section id="v-alim" class="grid" hidden>
+    <form class="panel" onsubmit="return false">
+      <span class="lbl">Matériau</span>
+      <div class="field"><label for="a_mat">Tube utilisé</label>
+        <select id="a_mat"><option value="per" selected>PER (souple, raccords à sertir ou à glissement)</option><option value="mc">Multicouche (cintrable, tient sa forme)</option><option value="cu">Cuivre (brasure ou raccords à compression)</option></select></div>
+      <span class="lbl">Points d'eau à alimenter</span>
+      <div class="rooms" id="a_list"></div>
+    </form>
+    <div class="res">
+      <div class="panel">
+        <div class="sum">
+          <div><span class="lbl">Points d'eau</span><span class="big" id="a_n"></span></div>
+          <div><span class="lbl">Arrivée générale</span><span class="big" id="a_gen"></span></div>
+          <div><span class="lbl">Sorties nourrice</span><span class="big" id="a_col"></span></div>
+        </div>
+        <p class="note" id="a_txt"></p>
+      </div>
+      <div class="panel">
+        <span class="lbl">Diamètre par appareil</span>
+        <div class="tbl"><table><thead><tr><th>Appareil</th><th>Nb</th><th>Tube</th><th>Raccord appareil</th></tr></thead><tbody id="a_tab"></tbody></table></div>
+        <p class="note">Diamètres en mm, extérieur pour PER et multicouche, intérieur × extérieur pour le cuivre (12/14 = 12 mm intérieur, 14 mm extérieur). En PER, on pose en « pieuvre » : une ligne par point d'eau depuis une nourrice, sans raccord caché dans les murs. Le PER se pose sous gaine (bleue eau froide, rouge eau chaude).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ÉVACUATION -->
+  <section id="v-evac" class="grid" hidden>
+    <form class="panel" onsubmit="return false">
+      <span class="lbl">L'évacuation</span>
+      <div class="field"><label for="e_app">Appareil</label><select id="e_app"></select></div>
+      <div class="field"><label for="e_l">Distance jusqu'à la descente (m)</label><input type="number" id="e_l" value="3" step="0.5" min="0.5" max="20"></div>
+      <div class="field"><label for="e_p">Pente choisie (cm par mètre)</label>
+        <select id="e_p"><option value="1">1 cm/m (minimum)</option><option value="2" selected>2 cm/m (conseillé)</option><option value="3">3 cm/m (maximum)</option></select></div>
+    </form>
+    <div class="res">
+      <div class="panel">
+        <div class="sum">
+          <div><span class="lbl">Diamètre PVC</span><span class="huge" id="e_d"></span></div>
+          <div><span class="lbl">Dénivelé à prévoir</span><span class="huge" id="e_h"></span></div>
+          <div><span class="lbl">Longueur</span><span class="huge" id="e_len"></span></div>
+        </div>
+        <div class="slope" aria-hidden="true"><svg viewBox="0 0 600 120" id="e_svg"></svg></div>
+        <div class="chips" id="e_chips"></div>
+        <p class="note" id="e_note"></p>
+      </div>
+      <div class="panel">
+        <span class="lbl">Mémo évacuation</span>
+        <div class="tbl"><table><thead><tr><th>Appareil</th><th>Ø PVC</th><th>Remarque</th></tr></thead><tbody id="e_tab"></tbody></table></div>
+        <p class="note">Pente entre 1 et 3 cm par mètre : trop faible, l'eau stagne ; trop forte, l'eau part sans les déchets solides. Chaque appareil a un siphon avec une garde d'eau de 50 mm contre les odeurs. Collage PVC : poncer, nettoyer au décapant, coller les deux faces, emboîter sans tourner. La chute principale en Ø 100 sort en toiture (ventilation primaire).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- RACCORDS & PRESSION -->
+  <section id="v-raccords" class="grid" hidden>
+    <form class="panel" onsubmit="return false">
+      <span class="lbl">Pression dans la maison</span>
+      <div class="field"><label for="r_p">Pression mesurée au compteur (bar)</label><input type="number" id="r_p" value="3.5" step="0.1" min="0" max="12"></div>
+      <div class="field"><label for="r_h">Hauteur du point d'eau le plus haut au-dessus du compteur (m)</label><input type="number" id="r_h" value="5" step="0.5" min="0" max="40">
+        <span class="hint">Environ 2,5 à 3 m par étage.</span></div>
+      <span class="lbl">Trouver un filetage</span>
+      <div class="field"><label for="r_f">Le client a un filetage…</label><select id="r_f"></select></div>
+    </form>
+    <div class="res">
+      <div class="panel">
+        <div class="sum">
+          <div><span class="lbl">Au rez-de-chaussée</span><span class="big" id="r_p0"></span></div>
+          <div><span class="lbl">Au point le plus haut</span><span class="big" id="r_p1"></span></div>
+          <div><span class="lbl">Verdict</span><span class="big" id="r_v"></span></div>
+        </div>
+        <p class="note" id="r_txt"></p>
+        <p class="note">Repère : 10 m de hauteur = 1 bar perdu. Idéal au robinet : 2 à 3 bar. Au-dessus de 3 bar, poser un réducteur de pression après le compteur (bruits, coups de bélier, joints qui fatiguent). Le groupe de sécurité du chauffe-eau est taré à 7 bar et doit être manœuvré une fois par mois.</p>
+      </div>
+      <div class="panel">
+        <span class="lbl">Correspondance des filetages</span>
+        <div class="tbl"><table><thead><tr><th>Appellation</th><th>Pouces</th><th>Ø extérieur du filet</th><th>Usage courant</th></tr></thead><tbody id="r_tab"></tbody></table></div>
+        <p class="note">Le « 15×21 » est le diamètre intérieur × extérieur du tube acier d'origine, d'où l'écart avec la mesure réelle. Mâle = filet à l'extérieur, femelle = filet à l'intérieur. Étanchéité : joint fibre sur raccord à portée plate, filasse + pâte ou ruban PTFE sur filetage conique.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="v-quiz" class="one" hidden>
+    <div class="panel">
+      <div class="sum">
+        <div><span class="lbl">Score</span><span class="big" id="q_score"></span></div>
+        <div><span class="lbl">Répondues</span><span class="big" id="q_done"></span></div>
+        <div><span class="lbl">Niveau</span><span class="big" id="q_lvl"></span></div>
+      </div>
+      <button type="button" class="btn" id="q_reset">Recommencer le test</button>
+    </div>
+    <div class="panel qz" id="q_list"></div>
+  </section>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fr=(n,d=0)=>Number(n).toLocaleString("fr-FR",{minimumFractionDigits:d,maximumFractionDigits:d});
+const on=(ids,fn)=>ids.forEach(i=>$(i).addEventListener("input",fn));
+
+/* ---------- CIRCUITS ---------- */
+const C=[
+ {k:"ecl",n:"Éclairage",s:"1,5",d:"16 A",lim:"8 points lumineux",id:"AC",note:"Un circuit par zone (jour, nuit…). Va-et-vient et télérupteur restent sur le même circuit."},
+ {k:"pr15",n:"Prises 16 A en 1,5 mm²",s:"1,5",d:"16 A",lim:"8 socles",id:"AC",note:"Une prise double compte pour 2 socles."},
+ {k:"pr25",n:"Prises 16 A en 2,5 mm²",s:"2,5",d:"20 A",lim:"12 socles",id:"AC",note:"Le 2,5 mm² permet plus de prises sur le même circuit."},
+ {k:"vr",n:"Volets roulants",s:"1,5",d:"16 A",lim:"selon puissance",id:"AC",note:"Un circuit dédié aux volets est conseillé."},
+ {k:"vmc",n:"VMC",s:"1,5",d:"2 A",lim:"1 VMC",id:"AC",note:"Circuit dédié, jamais coupé par un interrupteur."},
+ {k:"four",n:"Four",s:"2,5",d:"20 A",lim:"circuit spécialisé",id:"AC",note:"1 appareil = 1 circuit."},
+ {k:"lv",n:"Lave-vaisselle",s:"2,5",d:"20 A",lim:"circuit spécialisé",id:"AC",note:"ID type A conseillé."},
+ {k:"ll",n:"Lave-linge",s:"2,5",d:"20 A",lim:"circuit spécialisé",id:"A",note:"Électronique de moteur : différentiel type A obligatoire."},
+ {k:"sl",n:"Sèche-linge",s:"2,5",d:"20 A",lim:"circuit spécialisé",id:"AC",note:"1 appareil = 1 circuit."},
+ {k:"cong",n:"Congélateur",s:"2,5",d:"20 A",lim:"circuit spécialisé",id:"AC",note:"ID haute immunité (Hpi / Si) conseillé pour éviter un déclenchement intempestif qui ferait tout décongeler."},
+ {k:"plq",n:"Plaque de cuisson (mono)",s:"6",d:"32 A",lim:"circuit spécialisé",id:"A",note:"Sortie de câble ou prise 32 A. Plaque à induction : différentiel type A obligatoire."},
+ {k:"ce",n:"Chauffe-eau électrique",s:"2,5",d:"20 A",lim:"circuit spécialisé",id:"AC",note:"Commandé par un contacteur heures creuses."},
+ {k:"rad1",n:"Chauffage jusqu'à 2 250 W",s:"1,5",d:"10 A",lim:"2 250 W",id:"AC",note:"La limite porte sur la puissance totale du circuit, pas sur le nombre de radiateurs. Fil pilote : fil noir ou gris."},
+ {k:"rad2",n:"Chauffage jusqu'à 3 500 W",s:"1,5",d:"16 A",lim:"3 500 W",id:"AC",note:"Puissance totale des radiateurs du circuit."},
+ {k:"rad3",n:"Chauffage jusqu'à 4 500 W",s:"2,5",d:"20 A",lim:"4 500 W",id:"AC",note:"Puissance totale des radiateurs du circuit."},
+ {k:"irve",n:"Prise renforcée voiture (Green'Up)",s:"2,5",d:"20 A",lim:"1 prise",id:"A",note:"Recharge lente (environ 3,2 kW). Différentiel type A, ou F selon la notice."},
+ {k:"wb",n:"Borne murale 7,4 kW",s:"6 à 10",d:"32/40 A",lim:"1 borne",id:"A-EV",note:"Pose par un électricien qualifié IRVE obligatoire pour bénéficier des aides. Chaque point de recharge a son propre différentiel 30 mA. Section selon la longueur."},
+ {k:"pac",n:"PAC ou clim réversible",s:"selon notice",d:"selon notice",lim:"circuit spécialisé",id:"F",note:"Équipement à variateur de vitesse : la révision 2024 de la norme introduit le différentiel type F pour ces circuits (moins de déclenchements intempestifs). Section et calibre : suivre la notice du fabricant."},
+];
+const sec=s=>/\d$/.test(s)?s+" mm²":s;
+$("c_sel").innerHTML=C.map(c=>`<option value="${c.k}"${c.k==="ll"?" selected":""}>${c.n}</option>`).join("");
+$("c_tab").innerHTML=C.map(c=>`<tr data-k="${c.k}"><td>${c.n}</td><td class="n">${sec(c.s)}</td><td class="n">${c.d}</td><td>${c.lim}</td><td class="n">${c.id}</td></tr>`).join("");
+function circuits(){
+  const c=C.find(x=>x.k===$("c_sel").value);
+  $("c_s").textContent=sec(c.s);$("c_d").textContent=c.d;$("c_id").textContent="Type "+c.id;
+  $("c_chips").innerHTML=`<span class="chip">Limite : ${c.lim}</span>`+(c.id!=="AC"?`<span class="chip warn">Ne pas mettre sur un ID type AC</span>`:"");
+  $("c_note").textContent=c.note;
+  document.querySelectorAll("#c_tab tr").forEach(r=>r.classList.toggle("on",r.dataset.k===c.k));
+}
+on(["c_sel"],circuits);
+
+/* ---------- TABLEAU ---------- */
+function tableau(){
+  const S=+$("b_surf").value||0, hc=+$("b_hc").value;
+  const n=id=>Math.max(0,Math.round(+$(id).value||0));
+  const groups=[["ecl","Éclairage","var(--volt)",n("b_ecl")],["pr","Prises","var(--water)",n("b_pr")],["sp","Spécialisé","var(--hot)",n("b_sp")],["ch","Chauffage","var(--hot)",n("b_ch")],["vr","Volets/VMC","var(--volt)",n("b_vr")]];
+  const nA=n("b_a");
+  const others=[];
+  // entrelacer les types pour répartir l'éclairage sur plusieurs ID
+  let left=true;while(left){left=false;groups.forEach(g=>{if(g[3]>0){others.push({t:g[1],c:g[2]});g[3]--;left=true;}});}
+  const surfMin=S<=35?1:S<=100?2:3, cal=S<=35?25:40;
+  const nAC=Math.max(surfMin,Math.ceil(others.length/8)), nIdA=Math.max(1,Math.ceil(nA/8));
+  const ids=[];
+  for(let i=0;i<nAC;i++)ids.push({type:"AC",cal,list:[]});
+  for(let i=0;i<nIdA;i++)ids.push({type:"A",cal,list:[]});
+  others.forEach((o,i)=>ids[i%nAC].list.push(o));
+  for(let i=0;i<nA;i++)ids[nAC+(i%nIdA)].list.push({t:"Spécialisé type A",c:"var(--hot)"});
+  if(hc){const ce=ids.find(d=>d.list.some(o=>o.t==="Spécialisé"))||ids[0];ce.hc=true;}
+  // modules
+  const mods=[];
+  ids.forEach(d=>{mods.push({w:2,c:"var(--ink)",l:"ID "+d.type});if(d.hc)mods.push({w:1,c:"var(--good)",l:"HC"});d.list.forEach(o=>mods.push({w:1,c:o.c,l:o.t==="Éclairage"?"L":o.t==="Prises"?"P":o.t==="Chauffage"?"CH":o.t==="Volets/VMC"?"V":"S"}));});
+  const used=mods.reduce((s,m)=>s+m.w,0), need=Math.ceil(used*1.2), rows=Math.max(1,Math.ceil(need/13));
+  $("b_nid").textContent=`${nAC} AC + ${nIdA} A`;
+  $("b_mod").textContent=used+" / "+rows*13;
+  $("b_rg").textContent=rows+" rangée"+(rows>1?"s":"");
+  let fill=0;const rowsArr=[[]];
+  mods.forEach(m=>{if(fill+m.w>13){rowsArr.push([]);fill=0;}rowsArr[rowsArr.length-1].push(m);fill+=m.w;});
+  while(rowsArr.length<rows)rowsArr.push([]);
+  $("b_rows").innerHTML=rowsArr.map(r=>{
+    const w=r.reduce((s,m)=>s+m.w,0);
+    return `<div class="mrow">${r.map(m=>`<div class="mod" style="grid-column:span ${m.w};background:${m.c}">${m.l}</div>`).join("")}${Array.from({length:13-w},()=>`<div class="mod free"></div>`).join("")}</div>`;
+  }).join("");
+  $("b_ids").innerHTML=ids.map((d,i)=>{
+    const cnt={};d.list.forEach(o=>cnt[o.t]=(cnt[o.t]||0)+1);
+    const full=d.list.length>8;
+    return `<div class="idc"><b>ID ${i+1} · 30 mA type ${d.type} · ${d.cal} A</b>${Object.entries(cnt).map(([t,c])=>`<span>${c} × ${t}</span>`).join("")||"<span class='hint'>Aucun circuit</span>"}${d.hc?"<span class='good'>+ contacteur heures creuses</span>":""}<span class="hint ${full?"bad":""}">${d.list.length} circuit${d.list.length>1?"s":""} sur 8 max</span></div>`;
+  }).join("");
+}
+on(["b_surf","b_ecl","b_pr","b_a","b_sp","b_ch","b_vr","b_hc"],tableau);
+
+/* ---------- CALIBRE DES DIFFÉRENTIELS ---------- */
+// circuits proposés : calibre du disjoncteur (A) et coefficient de la règle de l'aval
+const GC=[
+ {k:"ecl",n:"Éclairage",a:16,c:.5},
+ {k:"pr16",n:"Prises (1,5 mm²)",a:16,c:.5},
+ {k:"pr20",n:"Prises (2,5 mm²)",a:20,c:.5},
+ {k:"prc",n:"Prises cuisine",a:20,c:.5},
+ {k:"vr",n:"Volets roulants",a:16,c:.5},
+ {k:"vmc",n:"VMC",a:2,c:.5},
+ {k:"four",n:"Four",a:20,c:.5},
+ {k:"lv",n:"Lave-vaisselle",a:20,c:.5},
+ {k:"ll",n:"Lave-linge",a:20,c:.5,A:1},
+ {k:"sl",n:"Sèche-linge",a:20,c:.5},
+ {k:"cong",n:"Congélateur",a:20,c:.5},
+ {k:"plq",n:"Plaque de cuisson",a:32,c:.5,A:1},
+ {k:"ce",n:"Chauffe-eau",a:20,c:1},
+ {k:"ch10",n:"Chauffage ≤ 2 250 W",a:10,c:1},
+ {k:"ch16",n:"Chauffage ≤ 3 500 W",a:16,c:1},
+ {k:"ch20",n:"Chauffage ≤ 4 500 W",a:20,c:1},
+ {k:"pac",n:"PAC / clim (chauffage)",a:20,c:1,F:1},
+ {k:"irve",n:"Prise renforcée voiture",a:20,c:1,A:1,ev:1},
+ {k:"wb",n:"Borne 7,4 kW",a:40,c:1,A:1,ev:1},
+ {k:"ext",n:"Prises extérieures",a:20,c:.5},
+];
+const CAL=[25,40,63];
+const pickCal=x=>CAL.find(c=>c>=x)||null;
+let G=[
+ {t:"AC",r:[["ecl",2],["pr20",2],["vmc",1]]},
+ {t:"AC",r:[["ecl",1],["pr20",2],["four",1],["lv",1],["sl",1]]},
+ {t:"AC",r:[["ch16",2],["ce",1]]},
+ {t:"A",r:[["plq",1],["ll",1],["prc",1]]},
+ {t:"A",r:[["irve",1]]},
+];
+function gRender(){
+  $("g_list").innerHTML=G.map((g,gi)=>`<div class="panel" id="g_card_${gi}">
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between">
+      <span class="lbl">Différentiel ${gi+1}</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <label for="g_t_${gi}" class="hint">Type</label>
+        <select id="g_t_${gi}" data-g="${gi}" style="width:auto">${["AC","A","F"].map(t=>`<option${t===g.t?" selected":""}>${t}</option>`).join("")}</select>
+        ${G.length>1?`<button type="button" class="pick" data-delg="${gi}">Supprimer</button>`:""}
+      </div>
+    </div>
+    <div class="tbl"><table><thead><tr><th>Circuit</th><th>Nb</th><th>Disj.</th><th>Coef.</th><th>Compte pour</th><th></th></tr></thead><tbody>
+    ${g.r.map(([k,n],ri)=>`<tr><td><select id="g_k_${gi}_${ri}" data-g="${gi}" data-r="${ri}" aria-label="Circuit">${GC.map(c=>`<option value="${c.k}"${c.k===k?" selected":""}>${c.n}</option>`).join("")}</select></td>
+      <td><input type="number" id="g_q_${gi}_${ri}" data-g="${gi}" data-r="${ri}" value="${n}" min="0" max="8" style="width:64px" aria-label="Nombre"></td>
+      <td class="n" id="g_a_${gi}_${ri}"></td><td class="n" id="g_c_${gi}_${ri}"></td><td class="n" id="g_v_${gi}_${ri}"></td>
+      <td><button type="button" class="x pick" data-g="${gi}" data-delr="${ri}" aria-label="Retirer ce circuit">✕</button></td></tr>`).join("")}
+    </tbody></table></div>
+    <button type="button" class="btn" data-addr="${gi}">+ Ajouter un circuit</button>
+    <div id="g_res_${gi}" style="display:grid;gap:8px"></div>
+  </div>`).join("");
+  $("g_list").querySelectorAll("select,input").forEach(el=>el.addEventListener("input",()=>{
+    const g=+el.dataset.g;
+    if(el.id.startsWith("g_t_"))G[g].t=el.value;
+    else if(el.id.startsWith("g_k_"))G[g].r[+el.dataset.r][0]=el.value;
+    else G[g].r[+el.dataset.r][1]=Math.max(0,Math.round(+el.value||0));
+    gCalc();
+  }));
+  $("g_list").querySelectorAll("[data-delr]").forEach(b=>b.onclick=()=>{G[+b.dataset.g].r.splice(+b.dataset.delr,1);gRender();});
+  $("g_list").querySelectorAll("[data-addr]").forEach(b=>b.onclick=()=>{G[+b.dataset.addr].r.push(["pr20",1]);gRender();});
+  $("g_list").querySelectorAll("[data-delg]").forEach(b=>b.onclick=()=>{G.splice(+b.dataset.delg,1);gRender();});
+  gCalc();
+}
+$("g_addid").onclick=()=>{G.push({t:"AC",r:[["pr20",1]]});gRender();};
+function gCalc(){
+  const br=+$("g_ab").value, am=pickCal(br);
+  let tot=0,over=0;
+  G.forEach((g,gi)=>{
+    let s1=0,s5=0,nc=0,needA=[],needF=[],ev=0,nonEv=0;
+    g.r.forEach(([k,n],ri)=>{
+      const c=GC.find(x=>x.k===k);
+      $("g_a_"+gi+"_"+ri).textContent=c.a+" A";
+      $("g_c_"+gi+"_"+ri).textContent=c.c===1?"× 1":"× 0,5";
+      $("g_v_"+gi+"_"+ri).textContent=fr(c.a*c.c*n,1).replace(",0","")+" A";
+      if(!n)return;
+      nc+=n;
+      if(c.c===1)s1+=c.a*n;else s5+=c.a*n;
+      if(c.A&&!needA.includes(c.n))needA.push(c.n);
+      if(c.F&&!needF.includes(c.n))needF.push(c.n);
+      if(c.ev)ev+=n;else nonEv+=n;
+    });
+    const load=s1+s5*.5, cal=pickCal(load); tot+=load; if(!cal)over++;
+    const chips=[];
+    chips.push(nc>8?`<span class="chip bad">${nc} circuits : 8 maximum</span>`:`<span class="chip">${nc} circuit${nc>1?"s":""} sur 8 max</span>`);
+    if(g.t==="AC"&&needA.length)chips.push(`<span class="chip bad">Type A requis : ${needA.join(", ")}</span>`);
+    if(g.t!=="F"&&needF.length)chips.push(`<span class="chip warn">Type F prévu pour : ${needF.join(", ")}</span>`);
+    if(ev&&(ev>1||nonEv))chips.push(`<span class="chip bad">Recharge voiture : un différentiel dédié par point de recharge</span>`);
+    if(cal&&am&&cal<am)chips.push(`<span class="chip good">Plus petit qu'avec la règle de l'amont (${am} A)</span>`);
+    $("g_res_"+gi).innerHTML=`<div class="sum">
+        <div><span class="lbl">Calcul</span><span class="hint" style="font-family:var(--mono)">${s1} × 1 + ${s5} × 0,5</span></div>
+        <div><span class="lbl">Charge</span><span class="big">${fr(load,1).replace(",0","")} A</span></div>
+        <div><span class="lbl">Calibre à choisir</span><span class="big ${cal?"good":"bad"}">${cal?"ID "+cal+" A · "+g.t:"> 63 A"}</span></div>
+      </div>${!cal?`<p class="note bad">Trop de charge pour un seul différentiel : déplacer des circuits vers un autre différentiel ou en ajouter un.</p>`:""}<div class="chips">${chips.join("")}</div>`;
+  });
+  $("g_n").textContent=G.length;
+  $("g_tot").textContent=fr(tot,1).replace(",0","")+" A";
+  $("g_am").textContent=am?am+" A":"> 63 A";
+  $("g_sum").textContent=over?`${over} différentiel${over>1?"s dépassent":" dépasse"} 63 A : répartir les circuits.`:`Avec la règle de l'amont, chaque différentiel devrait faire au moins ${br} A (disjoncteur de branchement), soit un ID ${am} A. La règle de l'aval permet souvent un calibre plus petit.`;
+}
+on(["g_ab"],gCalc);
+
+/* ---------- PIÈCES ---------- */
+const RM=[
+ {k:"sej",n:"Séjour",nb:1,surf:30,pr:s=>s<=28?5:7,pl:1,rj:2,sp:"Prise TV + 2 RJ45"},
+ {k:"cui",n:"Cuisine",nb:1,surf:10,pr:s=>6,pl:1,rj:0,sp:"Plaque 32 A, four, lave-vaisselle (+ lave-linge si présent)",prf:s=>s<=4?3:6},
+ {k:"ch",n:"Chambre",nb:3,pr:()=>3,pl:1,rj:1,sp:"—"},
+ {k:"bur",n:"Bureau",nb:0,pr:()=>3,pl:1,rj:1,sp:"Prévoir plus de prises pour l'informatique"},
+ {k:"sdb",n:"Salle de bain",nb:1,pr:()=>1,pl:1,rj:0,sp:"Sèche-serviettes, prise hors volume"},
+ {k:"wc",n:"WC",nb:1,pr:()=>0,pl:1,rj:0,sp:"Prise conseillée (WC lavant)"},
+ {k:"ent",n:"Entrée / couloir",nb:1,pr:()=>1,pl:1,rj:0,sp:"Va-et-vient ou télérupteur si 2 accès"},
+ {k:"cel",n:"Cellier / garage",nb:1,pr:()=>1,pl:1,rj:0,sp:"Lave-linge, sèche-linge, congélateur"},
+ {k:"ext",n:"Extérieur",nb:1,pr:()=>0,pl:1,rj:0,sp:"Prise étanche IP44 conseillée, ID 30 mA"},
+];
+$("p_rooms").innerHTML=`<div class="room h"><span>Pièce</span><span>Nombre</span><span>m²</span></div>`+RM.map(r=>`<div class="room"><label for="p_${r.k}">${r.n}</label><input type="number" id="p_${r.k}" value="${r.nb}" min="0" max="10">${r.surf!==undefined?`<input type="number" id="ps_${r.k}" value="${r.surf}" min="1" max="120" aria-label="Surface ${r.n}">`:"<span></span>"}</div>`).join("");
+function pieces(){
+  let pr=0,pl=0,rj=0,cuis=0;const rows=[];
+  RM.forEach(r=>{
+    const nb=Math.max(0,+$("p_"+r.k).value||0);if(!nb)return;
+    const s=r.surf!==undefined?(+$("ps_"+r.k).value||0):0;
+    const p=r.k==="cui"?(s<=4?3:6):r.pr(s);
+    pr+=p*nb;pl+=r.pl*nb;rj+=r.rj*nb;if(r.k==="cui")cuis=p;
+    const det=r.k==="cui"?`${p} (dont ${s<=4?3:4} plan de travail)`:p;
+    rows.push(`<tr><td>${r.n}${nb>1?` <span class="hint">× ${nb}</span>`:""}</td><td class="n">${det}</td><td class="n">${r.pl}</td><td class="n">${r.rj||"—"}</td><td>${r.sp}</td></tr>`);
+  });
+  const prHorsCuis=pr-cuis, circPr=Math.ceil(prHorsCuis/12)+(cuis?1:0), circL=Math.max(1,Math.ceil(pl/8));
+  $("p_pr").textContent=pr;$("p_pl").textContent=pl;
+  $("p_ci").textContent="≈ "+(circPr+circL);
+  $("p_sum").textContent=`${circL} circuit${circL>1?"s":""} d'éclairage et ${circPr} circuit${circPr>1?"s":""} de prises (en 2,5 mm², 12 socles max, cuisine à part), sans compter les spécialisés et le chauffage. ${rj} prises RJ45 au minimum.`;
+  $("p_tab").innerHTML=rows.join("");
+}
+document.querySelectorAll("#p_rooms input").forEach(i=>i.addEventListener("input",pieces));
+
+/* ---------- CÂBLE ---------- */
+const SEC=[[1.5,16],[2.5,20],[4,25],[6,32],[10,40],[16,63]];
+function cable(){
+  const P=+$("k_p").value||0,L=+$("k_l").value||0,max=+$("k_u").value;
+  const I=P/230;let best=null;
+  $("k_tab").innerHTML=SEC.map(([s,d])=>{
+    const du=2*0.0225*L*I/s, pct=du/230*100, okI=I<=d, okU=pct<=max, ok=okI&&okU;
+    if(ok&&!best)best={s,d,pct};
+    const v=!okI?`<span class="bad">Câble trop faible pour ${fr(I,1)} A</span>`:!okU?`<span class="warn">Chute trop forte</span>`:`<span class="good">Convient</span>`;
+    return `<tr class="${best&&best.s===s?"on":""}"><td class="n">${fr(s,1).replace(",0","")} mm²</td><td class="n">${d} A</td><td class="n">${fr(du,1)} V · ${fr(pct,1)} %</td><td>${v}</td></tr>`;
+  }).join("");
+  if(best){$("k_res").textContent=fr(best.s,1).replace(",0","")+" mm²";
+    $("k_txt").textContent=`Intensité ${fr(I,1)} A · disjoncteur ${best.d} A max · chute de tension ${fr(best.pct,1)} % (limite ${max} %).`;}
+  else{$("k_res").textContent="Au-delà de 16 mm²";$("k_txt").textContent="Trop long ou trop puissant : prévoir un sous-tableau ou faire étudier par un électricien.";}
+}
+on(["k_p","k_l","k_u"],cable);
+
+/* ---------- SALLE DE BAIN ---------- */
+// valeurs : 1 autorisé, 0 interdit, 2 sous condition
+const SB=[
+ {n:"Prise 16 A",v:[0,0,0,1],t:"Uniquement hors volume (à plus de 60 cm du bord de la baignoire ou du receveur)."},
+ {n:"Prise rasoir à transformateur",v:[0,0,1,1],t:"Autorisée en V2 grâce à son transformateur de séparation."},
+ {n:"Interrupteur 230 V",v:[0,0,0,1],t:"Hors volume uniquement ; en V2 seulement si alimenté en TBTS 12 V."},
+ {n:"Luminaire classe II",v:[0,0,1,1],t:"V2 : classe II et IPX4 minimum."},
+ {n:"Spot TBTS 12 V",v:[2,1,1,1],t:"V0 : IPX7 obligatoire. Transformateur toujours placé hors volumes."},
+ {n:"Sèche-serviettes",v:[0,0,1,1],t:"V2 : classe II, IPX4. Commande hors volume."},
+ {n:"Chauffe-eau électrique",v:[0,2,1,1],t:"V1 toléré pour un chauffe-eau horizontal, le plus haut possible, s'il est impossible de le placer ailleurs."},
+ {n:"Bouche de VMC",v:[0,2,1,1],t:"V1 si le fabricant l'autorise (IPX4, souvent en TBTS)."},
+ {n:"Baignoire balnéo / douche hydro",v:[0,2,2,1],t:"Selon la notice : IPX5 et alimentation protégée 30 mA, commandes hors de portée du baigneur."},
+];
+let sbSel=0;
+$("s_picks").innerHTML=SB.map((e,i)=>`<button type="button" class="pick" data-i="${i}" aria-pressed="${i===0}">${e.n}</button>`).join("");
+const sym=v=>v===1?`<span class="ok">✓</span>`:v===2?`<span class="cond">sous cond.</span>`:`<span class="no">✗</span>`;
+function sdb(){
+  $("s_tab").innerHTML=SB.map((e,i)=>`<tr class="${i===sbSel?"on":""}"><td>${e.n}</td>${e.v.map(v=>`<td>${sym(v)}</td>`).join("")}</tr>`).join("");
+  $("s_note").textContent=SB[sbSel].n+" : "+SB[sbSel].t;
+}
+document.querySelectorAll("#s_picks .pick").forEach(b=>b.onclick=()=>{sbSel=+b.dataset.i;document.querySelectorAll("#s_picks .pick").forEach(x=>x.setAttribute("aria-pressed",x===b));sdb();});
+
+/* ---------- ALIMENTATION ---------- */
+const AP=[
+ {k:"lav",n:"Lavabo / vasque",nb:2,per:"12",mc:"16",cu:"10/12",r:"Flexible 3/8\" (12×17)"},
+ {k:"wc",n:"WC",nb:1,per:"12",mc:"16",cu:"10/12",r:"Robinet d'arrêt 3/8\" (12×17)"},
+ {k:"dou",n:"Douche",nb:1,per:"16",mc:"16",cu:"12/14",r:"Raccords excentrés 1/2\" (15×21)"},
+ {k:"bai",n:"Baignoire",nb:1,per:"16",mc:"20",cu:"14/16",r:"Raccords excentrés 1/2\" (15×21)"},
+ {k:"evi",n:"Évier",nb:1,per:"16",mc:"16",cu:"12/14",r:"Flexible 3/8\" (12×17)"},
+ {k:"ll",n:"Lave-linge",nb:1,per:"16",mc:"16",cu:"12/14",r:"Robinet machine 3/4\" (20×27)"},
+ {k:"lv",n:"Lave-vaisselle",nb:1,per:"16",mc:"16",cu:"12/14",r:"Robinet machine 3/4\" (20×27)"},
+ {k:"ce",n:"Chauffe-eau",nb:1,per:"20",mc:"20",cu:"16/18",r:"3/4\" (20×27) + groupe de sécurité"},
+ {k:"rob",n:"Robinet extérieur",nb:0,per:"16",mc:"16",cu:"12/14",r:"1/2\" (15×21), robinet antigel conseillé"},
+];
+$("a_list").innerHTML=AP.map(a=>`<div class="room" style="grid-template-columns:minmax(0,1fr) 70px"><label for="a_${a.k}">${a.n}</label><input type="number" id="a_${a.k}" value="${a.nb}" min="0" max="10"></div>`).join("");
+function alim(){
+  const m=$("a_mat").value;let n=0;const rows=[];
+  AP.forEach(a=>{const nb=Math.max(0,+$("a_"+a.k).value||0);if(!nb)return;n+=nb;
+    rows.push(`<tr><td>${a.n}</td><td class="n">${nb}</td><td class="n">${m==="cu"?"Cuivre "+a.cu:(m==="per"?"PER Ø ":"Multicouche Ø ")+a[m]}</td><td>${a.r}</td></tr>`);});
+  const gen=m==="per"?(n<=3?"PER 16":n<=10?"PER 20":"PER 25"):m==="mc"?(n<=3?"MC 16":n<=10?"MC 20":"MC 26"):(n<=3?"Cu 14/16":n<=10?"Cu 16/18":"Cu 20/22");
+  $("a_n").textContent=n;$("a_gen").textContent=gen;
+  $("a_col").textContent=m==="per"?`${n} EF + EC`:"—";
+  $("a_txt").textContent=m==="per"?`Nourrice eau froide de ${n} sorties (une par point d'eau) et nourrice eau chaude pour les appareils qui en ont besoin (lavabos, douche, baignoire, évier). Prévoir 1 ou 2 sorties en réserve.`:m==="mc"?"Le multicouche se pose en série ou depuis une nourrice, avec raccords à sertir ou à glissement. Bien calibrer et ébavurer avant de sertir.":"Le cuivre se pose en série. Raccords à compression (olive) pour un bricoleur, brasure pour un pro. Ne jamais mélanger cuivre et acier galvanisé sans raccord diélectrique.";
+  $("a_tab").innerHTML=rows.join("");
+}
+on(["a_mat"],alim);document.querySelectorAll("#a_list input").forEach(i=>i.addEventListener("input",alim));
+
+/* ---------- ÉVACUATION ---------- */
+const EV=[
+ {k:"lav",n:"Lavabo / vasque",d:32,r:"Ø 40 si plus de 2 m",max:2},
+ {k:"bid",n:"Bidet",d:32,r:"",max:2},
+ {k:"dou",n:"Douche",d:40,r:"Receveur extra-plat : vérifier la hauteur du siphon",max:4},
+ {k:"bai",n:"Baignoire",d:40,r:"",max:4},
+ {k:"evi",n:"Évier",d:40,r:"",max:4},
+ {k:"ll",n:"Lave-linge",d:40,r:"Siphon de machine à laver, coude de vidange à 50–90 cm de haut",max:4},
+ {k:"lv",n:"Lave-vaisselle",d:40,r:"Peut se raccorder sur le siphon de l'évier",max:4},
+ {k:"wc",n:"WC",d:100,r:"Pipe Ø 100 (ou Ø 90/80 réduit) ; WC broyeur : Ø 32 à 40",max:1.5},
+ {k:"chute",n:"Chute principale",d:100,r:"Ventilée en toiture",max:null},
+];
+$("e_app").innerHTML=EV.filter(e=>e.max).map(e=>`<option value="${e.k}"${e.k==="dou"?" selected":""}>${e.n}</option>`).join("");
+$("e_tab").innerHTML=EV.map(e=>`<tr><td>${e.n}</td><td class="n">Ø ${e.d}</td><td>${e.r||"—"}</td></tr>`).join("");
+function evac(){
+  const e=EV.find(x=>x.k===$("e_app").value),L=+$("e_l").value||0,p=+$("e_p").value,h=L*p;
+  $("e_d").textContent="Ø "+e.d;$("e_h").textContent=fr(h,1).replace(",0","")+" cm";$("e_len").textContent=fr(L,1).replace(",0","")+" m";
+  const chips=[`<span class="chip">Pente ${p} cm/m = ${p} %</span>`];
+  if(L>e.max)chips.push(`<span class="chip warn">Au-delà de ${fr(e.max,1).replace(",0","")} m : passer au diamètre supérieur ou rapprocher la descente</span>`);
+  else chips.push(`<span class="chip good">Longueur raisonnable pour un Ø ${e.d}</span>`);
+  $("e_chips").innerHTML=chips.join("");
+  $("e_note").textContent=e.r?e.n+" : "+e.r+".":"";
+  // schéma : tube en pente, exagération verticale ×4
+  const x0=40,x1=560,y0=30;
+  const yy=y0+Math.min(70,Math.max(6,h*2.2));
+  $("e_svg").innerHTML=`<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y0}" stroke="var(--line)" stroke-dasharray="4 4"/>
+   <line x1="${x0}" y1="${y0}" x2="${x1}" y2="${yy}" stroke="var(--water)" stroke-width="10" stroke-linecap="round"/>
+   <line x1="${x1+18}" y1="${y0}" x2="${x1+18}" y2="${yy}" stroke="var(--ink)" stroke-width="1.5"/>
+   <text x="${x1+10}" y="${yy+22}" text-anchor="end">−${fr(h,1).replace(",0","")} cm</text>
+   <text x="${x0}" y="${yy+22}">${e.n} → descente sur ${fr(L,1).replace(",0","")} m (pente exagérée)</text>`;
+}
+on(["e_app","e_l","e_p"],evac);
+
+/* ---------- RACCORDS & PRESSION ---------- */
+const F=[
+ ["8×13","1/4\"","13 mm","Petits raccords, manomètres"],
+ ["12×17","3/8\"","17 mm","Flexibles de robinetterie, robinet de WC"],
+ ["15×21","1/2\"","21 mm","Robinets, douchettes, flexibles de douche"],
+ ["20×27","3/4\"","27 mm","Machines à laver, chauffe-eau, compteur"],
+ ["26×34","1\"","34 mm","Arrivée générale, gros débits"],
+ ["33×42","1\"1/4","42 mm","Installations collectives"],
+ ["40×49","1\"1/2","49 mm","Bondes, siphons de bac"],
+];
+$("r_f").innerHTML=F.map((f,i)=>`<option value="${i}"${i===2?" selected":""}>qui mesure ${f[2]} environ</option>`).join("");
+$("r_tab").innerHTML=F.map((f,i)=>`<tr data-i="${i}"><td class="n">${f[0]}</td><td class="n">${f[1]}</td><td class="n">${f[2]}</td><td>${f[3]}</td></tr>`).join("");
+function raccords(){
+  const p=+$("r_p").value||0,h=+$("r_h").value||0,p1=p-h/10;
+  $("r_p0").textContent=fr(p,1)+" bar";$("r_p1").textContent=fr(Math.max(0,p1),1)+" bar";
+  let v,c,t;
+  if(p>3){v="Réducteur";c="warn";t=`Plus de 3 bar au compteur : conseiller un réducteur de pression réglé autour de 3 bar, posé juste après le compteur et le robinet d'arrêt.`;}
+  else if(p1<1){v="Trop faible";c="bad";t=`Moins de 1 bar à l'étage : débit faible, chauffe-eau instantané ou mitigeur thermostatique risquent de mal fonctionner. Vérifier le filtre, le réducteur existant, ou envisager un surpresseur.`;}
+  else if(p1<2){v="Correct";c="warn";t=`Pression un peu juste en haut : préférer des robinets et pommeaux adaptés aux basses pressions.`;}
+  else{v="Idéal";c="good";t=`Pression confortable partout dans la maison.`;}
+  $("r_v").textContent=v;$("r_v").className="big "+c;$("r_txt").textContent=t;
+  const i=+$("r_f").value;document.querySelectorAll("#r_tab tr").forEach(r=>r.classList.toggle("on",+r.dataset.i===i));
+}
+on(["r_p","r_h","r_f"],raccords);
+
+/* ---------- QUIZ ---------- */
+const Q=[
+ ["Un circuit de prises en 2,5 mm² se protège avec un disjoncteur de…",["16 A","20 A","32 A"],1,"2,5 mm² → 20 A, jusqu'à 12 socles (norme 2024)."],
+ ["Pour une plaque de cuisson en monophasé, il faut…",["2,5 mm² / 20 A","4 mm² / 25 A","6 mm² / 32 A"],2,"Circuit spécialisé en 6 mm², disjoncteur 32 A, sur ID type A."],
+ ["Quels appareils exigent un différentiel type A ?",["Plaque de cuisson et lave-linge","Four et réfrigérateur","Éclairage et volets"],0,"Leur électronique peut créer des défauts que le type AC ne détecte pas. La prise de recharge voiture aussi."],
+ ["Combien de différentiels 30 mA minimum pour un logement de 80 m² ?",["2","3","4"],1,"De 35 à 100 m² : 2 ID type AC 40 A + 1 ID type A 40 A."],
+ ["Combien de circuits maximum sous un même interrupteur différentiel ?",["5","8","12"],1,"8 circuits maximum par ID."],
+ ["Une prise 16 A dans une salle de bain se pose…",["En volume 2","En volume 1","Hors volume uniquement"],2,"À plus de 60 cm du bord de la baignoire ou du receveur. Seule la prise rasoir à transformateur va en V2."],
+ ["Le neutre est de couleur…",["Bleu","Vert/jaune","Noir"],0,"Bleu = neutre, vert/jaune = terre, rouge/marron/noir = phase."],
+ ["Un câble électrique enterré passe dans une gaine de couleur…",["Bleue","Rouge","Jaune"],1,"Rouge = électricité, bleu = eau, jaune = gaz, vert = télécom."],
+ ["La pente d'une évacuation doit être de…",["0,5 cm/m","1 à 3 cm/m","5 cm/m"],1,"Trop faible l'eau stagne, trop forte les déchets restent."],
+ ["L'évacuation d'une douche se fait en PVC…",["Ø 32","Ø 40","Ø 100"],1,"Ø 40 pour douche, baignoire, évier et machines ; Ø 32 pour lavabo ; Ø 100 pour le WC."],
+ ["Un raccord « 15×21 » correspond à…",["3/8\"","1/2\"","3/4\""],1,"15×21 = 1/2\", 12×17 = 3/8\", 20×27 = 3/4\"."],
+ ["Au-delà de quelle pression conseiller un réducteur ?",["2 bar","3 bar","6 bar"],1,"Idéal 2 à 3 bar. Au-delà de 3 bar, réducteur après le compteur."],
+ ["Le groupe de sécurité d'un chauffe-eau est taré à…",["3 bar","5 bar","7 bar"],2,"7 bar, à manœuvrer une fois par mois."],
+ ["La garde d'eau d'un siphon fait environ…",["10 mm","50 mm","150 mm"],1,"50 mm d'eau bloquent les odeurs des égouts."],
+];
+let ans={};
+function quiz(){
+  $("q_list").innerHTML=Q.map((q,i)=>{
+    const a=ans[i];
+    return `<div class="q"><p>${i+1}. ${q[0]}</p><div class="opts">${q[1].map((o,j)=>`<button type="button" data-q="${i}" data-o="${j}" ${a!==undefined?"disabled":""} class="${a!==undefined?(j===q[2]?"right":(j===a?"wrong":"")):""}">${o}</button>`).join("")}</div>${a!==undefined?`<p class="ex">${a===q[2]?"Bonne réponse. ":"Raté. "}${q[3]}</p>`:""}</div>`;
+  }).join("");
+  const done=Object.keys(ans).length,ok=Object.entries(ans).filter(([i,a])=>Q[i][2]===a).length;
+  $("q_score").textContent=ok+" / "+Q.length;$("q_done").textContent=done+" / "+Q.length;
+  const r=done?ok/done:0;
+  $("q_lvl").textContent=!done?"—":done<Q.length?"En cours":r>=.85?"Prêt pour le rayon":r>=.6?"Bonnes bases":"À revoir";
+  $("q_list").querySelectorAll("button").forEach(b=>b.onclick=()=>{ans[+b.dataset.q]=+b.dataset.o;quiz();});
+}
+$("q_reset").onclick=()=>{ans={};quiz();};
+
+/* ---------- ONGLETS ---------- */
+const T=["circuits","tableau","charge","pieces","cable","sdb","alim","evac","raccords","quiz"];
+function route(){
+  const t=T.includes(location.hash.slice(1))?location.hash.slice(1):"circuits";
+  T.forEach(x=>{$("v-"+x).hidden=x!==t;});
+  document.querySelectorAll("nav a").forEach(a=>a.dataset.t===t?a.setAttribute("aria-current","page"):a.removeAttribute("aria-current"));
+}
+window.addEventListener("hashchange",route);
+circuits();tableau();gRender();pieces();cable();sdb();alim();evac();raccords();quiz();route();
+</script>
+
+</body></html>

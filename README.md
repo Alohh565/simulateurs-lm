@@ -7,9 +7,12 @@ Simulateurs de vente gratuits et open source pour les rayons d'un magasin de bri
 | Rayon | Simulateur | Ce qu'il fait |
 |---|---|---|
 | Confort | [Chauffage](sims/chauffage.html) | Compare le coût annuel, l'investissement, le retour sur investissement et le CO₂ de 8 solutions de chauffage |
+| Confort | [Calculettes Confort](sims/calculettes-confort.html) | Clim, solaire, eau chaude, radiateurs, granulés, VMC et primes, avec devis |
 | Menuiseries | [Menuiseries](sims/menuiseries.html) | Fenêtres et portes : prix, pose, TVA, MaPrimeRénov', reste à charge et économies |
 | Cuisine | [Atelier Cuisine](sims/cuisine.html) | Plan 2D, vue 3D, aménagement des meubles, contrôles d'ergonomie et devis |
+| Salle de bain | [Salle de bain](sims/salle-de-bain.html) | Sèche-serviettes, budget, découverte client et devis |
 | Sols | [Sols](sims/sols.html) | Pièces, revêtement, type de pose, plan 3D et finitions |
+| Électricité & Plomberie | [Élec & Plomberie](sims/elec-plomberie.html) | Calculettes du rayon électricité et plomberie |
 | Quincaillerie | [Fixation](sims/fixation.html) | Choix de la cheville, du foret et de la vis selon le support et le poids |
 
 La page [`index.html`](index.html) regroupe tous les simulateurs dans un seul outil. On peut passer d'un rayon à l'autre sans perdre sa saisie.

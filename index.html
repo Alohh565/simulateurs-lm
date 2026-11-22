@@ -64,7 +64,8 @@ iframe.on{display:block}
 <script>
 const RAYONS = [
   {id:'confort', name:'Confort – Chauffage & clim', icon:'🔥', tools:[
-    {id:'chauffage', file:'sims/chauffage.html', name:'Simulateur Confort Chauffage', desc:'Coût annuel, investissement, retour et CO₂ de 8 solutions'}
+    {id:'chauffage', file:'sims/chauffage.html', name:'Simulateur Confort Chauffage', desc:'Coût annuel, investissement, retour et CO₂ de 8 solutions'},
+    {id:'calculettes-confort', file:'sims/calculettes-confort.html', name:'Calculettes Rayon Confort', desc:'Clim, solaire, eau chaude, radiateurs, granulés, VMC, primes…'}
   ]},
   {id:'menuiseries', name:'Menuiseries', icon:'🪟', tools:[
     {id:'menuiseries', file:'sims/menuiseries.html', name:'Simulateur menuiseries', desc:'Fenêtres et portes : prix, pose, TVA, MaPrimeRénov\''}
@@ -72,8 +73,14 @@ const RAYONS = [
   {id:'cuisine', name:'Cuisine', icon:'🍳', tools:[
     {id:'cuisine', file:'sims/cuisine.html', name:'Atelier Cuisine', desc:'Plan 2D, vue 3D, aménagement, ergonomie et devis'}
   ]},
+  {id:'salle-de-bain', name:'Salle de bain', icon:'🛁', tools:[
+    {id:'salle-de-bain', file:'sims/salle-de-bain.html', name:'Outils de vente salle de bain', desc:'Sèche-serviettes, budget, découverte client, devis'}
+  ]},
   {id:'sols', name:'Sols', icon:'🧱', tools:[
     {id:'sols', file:'sims/sols.html', name:'Simulateur Sols', desc:'Pièces, revêtement, type de pose, plan 3D et finitions'}
+  ]},
+  {id:'elec-plomberie', name:'Électricité & Plomberie', icon:'⚡', tools:[
+    {id:'elec-plomberie', file:'sims/elec-plomberie.html', name:'Calculettes Élec & Plomberie', desc:'Calculettes du rayon Élec & Plomberie'}
   ]},
   {id:'quincaillerie', name:'Quincaillerie – Fixation', icon:'🔩', tools:[
     {id:'fixation', file:'sims/fixation.html', name:'Simulateur de fixation', desc:'Cheville, foret et vis selon support et poids'}

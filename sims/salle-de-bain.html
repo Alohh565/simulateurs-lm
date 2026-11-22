@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rayon salle de bain : outils de vente</title>
+<style>
+:root{
+  --bg:#f6f5f2; --card:#fff; --ink:#1f2a30; --muted:#64737b; --line:#e2e0da;
+  --acc:#1d6f8c; --acc2:#e7f2f6; --ok:#2e7d4f; --okbg:#e6f4ec; --warn:#b4541c; --warnbg:#fbeee4; --bad:#b3261e; --badbg:#fbe9e7;
+  --r:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45}
+header{background:#14323f;color:#fff;padding:18px 22px 0}
+header h1{margin:0;font-size:20px;font-weight:650;letter-spacing:.2px}
+header p{margin:4px 0 14px;color:#b9d2dc;font-size:13.5px}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav a{color:#cfe3ea;text-decoration:none;padding:10px 16px;border-radius:10px 10px 0 0;font-weight:560;font-size:14.5px}
+nav a.on{background:var(--bg);color:var(--ink)}
+nav a:hover:not(.on){background:#1c4252}
+main{max-width:1280px;margin:0 auto;padding:20px}
+section.view{display:none}
+section.view.on{display:block}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.card h2{font-size:16px;margin:0 0 12px;font-weight:650}
+.card h3{font-size:14px;margin:14px 0 8px;font-weight:650}
+label{display:block;font-size:13px;color:var(--muted);margin:8px 0 4px}
+input[type=number],input[type=text],select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;color:var(--ink)}
+textarea{min-height:70px;resize:vertical}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.row>div{flex:1;min-width:90px}
+.chk{display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:14px;color:var(--ink);margin:0;cursor:pointer}
+.chk input{margin-top:3px}
+button{font:inherit;border:1px solid var(--acc);background:var(--acc);color:#fff;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:560}
+button.ghost{background:#fff;color:var(--acc)}
+button.small{padding:4px 9px;font-size:13px}
+button.danger{border-color:var(--bad);background:#fff;color:var(--bad)}
+button:hover{filter:brightness(1.07)}
+.big{font-size:30px;font-weight:700;color:var(--acc);line-height:1.1}
+.sub{color:var(--muted);font-size:13px}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;background:var(--acc2);color:var(--acc)}
+.pill.a3{background:#efe7fb;color:#5b3a9a}.pill.a4{background:#fdf0dc;color:#8a5a12}
+.msg{padding:9px 12px;border-radius:8px;font-size:13.5px;margin:6px 0}
+.msg.ok{background:var(--okbg);color:var(--ok)}.msg.warn{background:var(--warnbg);color:var(--warn)}.msg.bad{background:var(--badbg);color:var(--bad)}.msg.info{background:var(--acc2);color:#174e63}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:600}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td input[type=number]{width:72px;padding:5px 6px}
+td select{padding:5px 6px;width:auto}
+.tot td{border:none;padding:4px 6px}
+.tot tr:last-child td{font-size:18px;font-weight:700;color:var(--acc);padding-top:8px}
+.kpis{display:flex;gap:12px;flex-wrap:wrap}
+.kpi{flex:1;min-width:130px;background:var(--acc2);border-radius:10px;padding:10px 12px}
+.kpi b{display:block;font-size:20px;color:#14323f}
+.kpi span{font-size:12.5px;color:var(--muted)}
+.persona{background:#fffaf0;border:1px solid #f0dfbd;border-radius:10px;padding:12px 14px}
+.persona h3{margin:0 0 6px}
+.score{font-size:40px;font-weight:750}
+.palette{display:flex;flex-wrap:wrap;gap:6px}
+.palette button{background:#fff;color:var(--ink);border-color:var(--line);font-weight:500;font-size:13px;padding:6px 10px}
+.palette button i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+canvas{display:block;width:100%;border-radius:10px;background:#fbfbfa;border:1px solid var(--line);touch-action:none}
+#c3d{background:linear-gradient(#eef3f6,#f9fafb);cursor:grab}
+#c2d{cursor:default}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.hint{font-size:12.5px;color:var(--muted)}
+.zones td:first-child{font-weight:650;white-space:nowrap}
+details summary{cursor:pointer;font-weight:600;color:var(--acc);padding:4px 0}
+.copybox{width:100%;min-height:160px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;margin-top:8px}
+.progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0}
+.progress div{height:100%;background:var(--acc);transition:width .2s}
+.flex{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+footer{max-width:1280px;margin:0 auto;padding:0 20px 30px;color:var(--muted);font-size:12.5px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Rayon salle de bain</h1>
+  <p>Outil client · Outil collaborateur · Simulation de vente · Plan 3D — les onglets partagent les mêmes dimensions et le même devis.</p>
+  <nav id="nav">
+    <a href="#client" data-v="client">Outil client</a>
+    <a href="#collaborateur" data-v="collaborateur">Outil collaborateur</a>
+    <a href="#vente" data-v="vente">Simulation de vente</a>
+    <a href="#plan-3d" data-v="plan-3d">Plan 3D</a>
+  </nav>
+</header>
+
+<main>
+<!-- ================= CLIENT ================= -->
+<section class="view" id="v-client">
+ <div class="grid g2">
+  <div class="card">
+   <h2>1. Ma salle de bain</h2>
+   <div class="row">
+    <div><label>Longueur (m)</label><input type="number" step="0.05" min="0.8" id="rL"></div>
+    <div><label>Largeur (m)</label><input type="number" step="0.05" min="0.8" id="rW"></div>
+    <div><label>Hauteur (m)</label><input type="number" step="0.05" min="2" id="rH"></div>
+   </div>
+   <div class="kpis" style="margin-top:12px">
+    <div class="kpi"><b id="kS">–</b><span>Surface au sol</span></div>
+    <div class="kpi"><b id="kV">–</b><span>Volume</span></div>
+    <div class="kpi"><b id="kP">–</b><span>Périmètre</span></div>
+   </div>
+  </div>
+
+  <div class="card">
+   <h2>2. Quelle puissance de sèche-serviettes ?</h2>
+   <div class="row">
+    <div><label>Isolation du logement</label>
+     <select id="iso">
+      <option value="40">Bonne (logement récent, RT 2012 / RE 2020)</option>
+      <option value="55" selected>Moyenne (rénové, double vitrage)</option>
+      <option value="70">Faible (ancien, peu isolé)</option>
+     </select></div>
+    <div><label>Rôle de l'appareil</label>
+     <select id="role">
+      <option value="1">Chauffage principal de la pièce</option>
+      <option value="0.6">Appoint (un autre chauffage existe)</option>
+     </select></div>
+   </div>
+   <label class="chk"><input type="checkbox" id="rapide"> Je veux une montée en température rapide le matin</label>
+   <div style="margin-top:10px" class="flex">
+    <div><div class="sub">Puissance conseillée</div><div class="big" id="pW">–</div><div class="sub" id="pCalc"></div></div>
+    <div id="pReco" style="max-width:300px"></div>
+   </div>
+   <div class="msg info" style="margin-top:10px">Ventilation : une salle de bain doit être ventilée (extraction d'environ 15 à 30 m³/h selon le logement). Un sèche-serviettes ne remplace pas une VMC.</div>
+  </div>
+ </div>
+
+ <div class="card" style="margin-top:16px">
+  <h2>3. Estimer mon budget</h2>
+  <div class="grid g2">
+   <div>
+    <label>Type de projet</label>
+    <select id="projType">
+     <option value="complet">Rénovation complète</option>
+     <option value="douche">Remplacer la baignoire par une douche</option>
+     <option value="rafraichir">Rafraîchir (meuble, robinetterie, accessoires)</option>
+     <option value="perso">Je choisis moi-même les éléments</option>
+    </select>
+    <label>Gamme souhaitée</label>
+    <select id="cGamme">
+     <option value="0">Essentiel (petit prix)</option>
+     <option value="1" selected>Confort</option>
+     <option value="2">Premium (design, haut de gamme)</option>
+    </select>
+    <label class="chk" style="margin-top:10px"><input type="checkbox" id="cPose"> J'ajoute une estimation de pose par un professionnel</label>
+   </div>
+   <div>
+    <label>Éléments du projet</label>
+    <div id="needs"></div>
+   </div>
+  </div>
+  <div class="flex" style="margin-top:14px;border-top:1px solid var(--line);padding-top:14px">
+   <div><div class="sub">Budget estimé (fourniture<span id="poseLbl"></span>)</div><div class="big" id="bud">–</div><div class="sub">Fourchette indicative selon modèles choisis, prix à confirmer en magasin.</div></div>
+   <button id="toDevis">Envoyer au devis du conseiller →</button>
+  </div>
+ </div>
+</section>
+
+<!-- ================= COLLABORATEUR ================= -->
+<section class="view" id="v-collaborateur">
+ <div class="grid g2">
+  <div class="card">
+   <div class="flex"><h2 style="margin:0">Grille de découverte client</h2><button class="small ghost" id="resetDisc">Réinitialiser</button></div>
+   <div class="progress"><div id="discBar" style="width:0"></div></div>
+   <div class="sub" id="discTxt"></div>
+   <div id="disc" style="margin-top:6px"></div>
+   <label>Notes de l'entretien</label>
+   <textarea id="notes" placeholder="Contraintes, envies, arrivées d'eau, état des murs…"></textarea>
+  </div>
+
+  <div class="card">
+   <h2>Ventes complémentaires à proposer</h2>
+   <div class="sub">Calculées automatiquement d'après le devis en cours.</div>
+   <div id="compl" style="margin-top:8px"></div>
+   <h3>Argumentaires express</h3>
+   <div id="args"></div>
+  </div>
+ </div>
+
+ <div class="grid g2" style="margin-top:16px">
+  <div class="card">
+   <h2>Volumes de sécurité électrique (NF C 15-100)</h2>
+   <table class="zones">
+    <tr><th>Volume</th><th>Où ?</th><th>Autorisé</th></tr>
+    <tr><td>Volume 0</td><td>Intérieur de la baignoire ou du receveur</td><td>IPX7 – uniquement TBTS 12 V</td></tr>
+    <tr><td>Volume 1</td><td>Au-dessus du volume 0, jusqu'à 2,25 m</td><td>IPX4 (IPX5 si jets) – TBTS 12 V ; chauffe-eau possible s'il est protégé en 30 mA</td></tr>
+    <tr><td>Volume 2</td><td>60 cm autour du volume 1</td><td>IPX4 – appareils classe II (luminaires, sèche-serviettes)</td></tr>
+    <tr><td>Hors volume</td><td>Reste de la pièce</td><td>Prises avec terre, appareils classe I possibles</td></tr>
+   </table>
+   <div class="msg warn" style="margin-top:10px">Tous les circuits de la salle d'eau sont protégés par un différentiel 30 mA. Aide-mémoire : vérifier la norme en vigueur avant tout conseil d'installation.</div>
+  </div>
+  <div class="card">
+   <h2>Cotes repères à rappeler au client</h2>
+   <table>
+    <tr><td>Hauteur du plan vasque</td><td class="num">85 – 90 cm</td></tr>
+    <tr><td>Hauteur d'assise WC suspendu</td><td class="num">40 – 45 cm</td></tr>
+    <tr><td>Espace libre devant WC, vasque, douche</td><td class="num">≥ 60 cm (70 cm conseillé)</td></tr>
+    <tr><td>Hauteur du mitigeur de douche</td><td class="num">≈ 1,10 – 1,20 m</td></tr>
+    <tr><td>Accessibilité PMR : aire de rotation</td><td class="num">Ø 1,50 m</td></tr>
+    <tr><td>Chute carrelage à prévoir</td><td class="num">+ 10 %</td></tr>
+   </table>
+   <div class="sub" style="margin-top:8px">Astuce : passe dans l'onglet <b>Plan 3D</b> avec le client pour vérifier ces dégagements en direct.</div>
+  </div>
+ </div>
+</section>
+
+<!-- ================= VENTE ================= -->
+<section class="view" id="v-vente">
+ <div class="grid g2">
+  <div class="card">
+   <div class="flex"><h2 style="margin:0">Mode entraînement</h2><button id="newClient">🎲 Nouveau client</button></div>
+   <div id="personaBox" style="margin-top:12px"><div class="sub">Tire un client fictif, mène la découverte (onglet Collaborateur), construis le devis ci-dessous puis clique sur « Évaluer ma vente ».</div></div>
+   <div id="evalBox" style="margin-top:10px"></div>
+  </div>
+  <div class="card">
+   <h2>Ajouter un produit</h2>
+   <div class="row">
+    <div style="flex:3"><label>Produit</label><select id="addProd"></select></div>
+    <div><label>Gamme</label><select id="addG"><option value="0">Essentiel</option><option value="1" selected>Confort</option><option value="2">Premium</option></select></div>
+    <div style="max-width:90px"><label>Qté</label><input type="number" id="addQ" value="1" min="0.5" step="0.5"></div>
+    <div style="flex:0"><button id="addBtn">Ajouter</button></div>
+   </div>
+   <div class="row" style="margin-top:6px">
+    <div><label>Remise (%)</label><input type="number" id="remise" value="0" min="0" max="50" step="1"></div>
+    <div><label>Pose estimée (% du matériel)</label><input type="number" id="posePct" value="70" min="0" max="200" step="5"></div>
+    <div style="flex:2"><label class="chk"><input type="checkbox" id="vPose"> Inclure l'estimation de pose</label></div>
+   </div>
+  </div>
+ </div>
+
+ <div class="card" style="margin-top:16px">
+  <div class="flex"><h2 style="margin:0">Devis en cours</h2>
+   <div class="toolbar" style="margin:0">
+    <button class="small ghost" id="copyDevis">Copier le devis</button>
+    <button class="small danger" id="clearDevis">Vider</button>
+    <button class="small" id="evalBtn">Évaluer ma vente</button>
+   </div></div>
+  <table style="margin-top:10px">
+   <thead><tr><th>Produit</th><th>Allée</th><th>Gamme</th><th class="num">Qté</th><th class="num">Prix unit.</th><th class="num">Total</th><th></th></tr></thead>
+   <tbody id="devisBody"></tbody>
+  </table>
+  <table class="tot" style="max-width:380px;margin:10px 0 0 auto"><tbody id="totBody"></tbody></table>
+  <textarea class="copybox" id="copyArea" style="display:none" readonly></textarea>
+ </div>
+
+ <div class="card" style="margin-top:16px">
+  <details>
+   <summary>Paramètres du catalogue : prix indicatifs et allée de chaque produit</summary>
+   <div class="sub" style="margin:6px 0 10px">Remplace ces valeurs par les prix réels et l'emplacement réel des produits dans les allées 3 et 4. Elles sont gardées dans ce navigateur.</div>
+   <table><thead><tr><th>Produit</th><th>Allée</th><th>Unité</th><th class="num">Essentiel</th><th class="num">Confort</th><th class="num">Premium</th></tr></thead><tbody id="catBody"></tbody></table>
+   <button class="small ghost" id="resetCat" style="margin-top:10px">Revenir aux valeurs par défaut</button>
+  </details>
+ </div>
+</section>
+
+<!-- ================= PLAN 3D ================= -->
+<section class="view" id="v-plan-3d">
+ <div class="card">
+  <div class="flex">
+   <div class="row" style="flex:1;max-width:520px">
+    <div><label>Longueur (m)</label><input type="number" step="0.05" min="0.8" id="pL"></div>
+    <div><label>Largeur (m)</label><input type="number" step="0.05" min="0.8" id="pWd"></div>
+    <div><label>Hauteur (m)</label><input type="number" step="0.05" min="2" id="pH"></div>
+   </div>
+   <label class="chk"><input type="checkbox" id="snap" checked> Aimanter contre les murs</label>
+  </div>
+  <label>Ajouter un élément</label>
+  <div class="palette" id="palette"></div>
+ </div>
+
+ <div class="grid g2" style="margin-top:16px">
+  <div class="card">
+   <div class="flex"><h2 style="margin:0">Vue de dessus</h2>
+    <div class="toolbar" style="margin:0">
+     <button class="small ghost" id="rotBtn" disabled>↻ Pivoter</button>
+     <button class="small danger" id="delBtn" disabled>Supprimer</button>
+    </div></div>
+   <div class="hint" style="margin:4px 0 8px">Glisse les éléments. Zones pointillées = dégagement de 60 cm à garder libre. Clic sur un élément pour le sélectionner.</div>
+   <canvas id="c2d" height="440"></canvas>
+  </div>
+  <div class="card">
+   <div class="flex"><h2 style="margin:0">Vue 3D</h2>
+    <div class="toolbar" style="margin:0">
+     <button class="small ghost" data-cam="iso">Perspective</button>
+     <button class="small ghost" data-cam="top">Dessus</button>
+     <button class="small ghost" data-cam="front">Face</button>
+    </div></div>
+   <div class="hint" style="margin:4px 0 8px">Fais glisser pour tourner autour de la pièce, molette pour zoomer.</div>
+   <canvas id="c3d" height="440"></canvas>
+  </div>
+ </div>
+
+ <div class="grid g2" style="margin-top:16px">
+  <div class="card">
+   <h2>Contrôle du plan</h2>
+   <div class="kpis"><div class="kpi"><b id="pSurf">–</b><span>Surface libre au sol</span></div><div class="kpi"><b id="pNb">–</b><span>Éléments</span></div></div>
+   <div id="pChecks" style="margin-top:10px"></div>
+  </div>
+  <div class="card">
+   <h2>Transformer le plan en devis</h2>
+   <label class="chk"><input type="checkbox" id="xSol" checked> Ajouter le carrelage de sol (+10 % de chute)</label>
+   <label class="chk"><input type="checkbox" id="xFai"> Ajouter la faïence murale (sur 2 m de hauteur, +10 %)</label>
+   <label class="chk"><input type="checkbox" id="xVmc" checked> Ajouter un aérateur / VMC</label>
+   <div class="row" style="margin-top:6px"><div style="max-width:200px"><label>Gamme</label><select id="xG"><option value="0">Essentiel</option><option value="1" selected>Confort</option><option value="2">Premium</option></select></div>
+   <div style="flex:0"><button id="planToDevis">Créer le devis →</button></div></div>
+   <div class="sub" style="margin-top:8px">Le devis existant est remplacé. Retrouve-le dans l'onglet Simulation de vente.</div>
+  </div>
+ </div>
+</section>
+</main>
+<footer>Prix et puissances indicatifs, à adapter au magasin. Les données saisies restent dans ce navigateur.</footer>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const eur=v=>v.toLocaleString('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+const G=['Essentiel','Confort','Premium'];
+
+/* ---------- Catalogue ---------- */
+const DEFAULT_CAT=[
+ {id:'douche',name:'Receveur + paroi de douche',allee:3,unit:'u',p:[250,550,1200]},
+ {id:'colonne',name:'Colonne / mitigeur de douche thermostatique',allee:3,unit:'u',p:[60,180,450]},
+ {id:'baignoire',name:'Baignoire',allee:3,unit:'u',p:[180,450,1100]},
+ {id:'mitbain',name:'Mitigeur bain-douche',allee:3,unit:'u',p:[50,120,280]},
+ {id:'evac',name:'Bonde / siphon & évacuation',allee:3,unit:'u',p:[25,45,90]},
+ {id:'vasque',name:'Meuble sous-vasque + vasque',allee:4,unit:'u',p:[190,420,950]},
+ {id:'mitlav',name:'Mitigeur lavabo',allee:4,unit:'u',p:[35,90,220]},
+ {id:'miroir',name:'Miroir / armoire lumineuse',allee:4,unit:'u',p:[40,120,300]},
+ {id:'colmeuble',name:'Colonne de rangement',allee:4,unit:'u',p:[60,150,350]},
+ {id:'wc',name:'Pack WC suspendu (bâti + cuvette)',allee:4,unit:'u',p:[180,380,750]},
+ {id:'plaque',name:'Plaque de commande WC',allee:4,unit:'u',p:[25,60,150]},
+ {id:'seche',name:'Sèche-serviettes électrique',allee:4,unit:'u',p:[120,350,700]},
+ {id:'vmc',name:'Aérateur / VMC hygroréglable',allee:4,unit:'u',p:[40,150,350]},
+ {id:'solcar',name:'Carrelage de sol',allee:3,unit:'m²',p:[15,35,70]},
+ {id:'faience',name:'Faïence murale',allee:3,unit:'m²',p:[15,35,70]},
+ {id:'colle',name:'Colle & joint carrelage',allee:3,unit:'m²',p:[4,7,12]},
+ {id:'access',name:'Lot accessoires (porte-serviettes, patères…)',allee:4,unit:'u',p:[30,80,200]},
+];
+const ARG={
+ douche:"Plain-pied = sécurité et accès facile à tout âge ; verre traité anticalcaire = moins d'entretien.",
+ colonne:"Thermostatique : température stable, pas de brûlure (enfants, seniors) et économies d'eau.",
+ baignoire:"Idéale avec de jeunes enfants ; acrylique = chaude au toucher et légère à poser.",
+ mitbain:"Inverseur bain/douche et limiteur de débit pour maîtriser la consommation.",
+ vasque:"Meuble suspendu = sol dégagé, ménage facilité, effet d'espace dans une petite pièce.",
+ mitlav:"Cartouche économique : réduit la consommation d'eau sans perte de confort.",
+ miroir:"Éclairage LED intégré = bonne lumière pour se maquiller ou se raser, faible consommation.",
+ wc:"Suspendu : gain de place visuel, nettoyage du sol complet, hauteur d'assise réglable à la pose.",
+ seche:"Chauffe la pièce et sèche le linge ; programmation et détection de fenêtre ouverte pour consommer moins.",
+ vmc:"Hygroréglable : extrait plus quand il y a de l'humidité, protège des moisissures.",
+ solcar:"Grès cérame : résistant, antidérapant (R10/R11 conseillé en salle de bain).",
+ colmeuble:"Rangement en hauteur : libère le plan vasque.",
+};
+const COMPL={douche:['colonne','evac','vmc'],baignoire:['mitbain','evac','vmc'],vasque:['mitlav','miroir'],wc:['plaque'],solcar:['colle'],faience:['colle']};
+const TIPS={seche:"Sèche-serviettes : proposer un modèle programmable (fil pilote) ou avec soufflerie.",douche:"Douche : proposer joint silicone sanitaire et barre de maintien si client senior.",solcar:"Carrelage : penser à la sous-couche d'étanchéité (SPEC) dans la zone douche.",vasque:"Meuble vasque : vérifier les fixations murales adaptées au support (placo, brique)."};
+
+/* ---------- État ---------- */
+const KEY='sdb-allees34-v1';
+let S={room:{L:2.6,W:2.0,H:2.5},cat:JSON.parse(JSON.stringify(DEFAULT_CAT)),devis:[],disc:{},notes:'',items:[],persona:null,remise:0,posePct:70,vPose:false};
+try{const raw=localStorage.getItem(KEY);if(raw){const o=JSON.parse(raw);S=Object.assign(S,o);}}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
+const cat=id=>S.cat.find(c=>c.id===id);
+
+/* ---------- Navigation ---------- */
+const VIEWS=['client','collaborateur','vente','plan-3d'];
+function route(){
+ let v=(location.hash||'#client').slice(1); if(!VIEWS.includes(v)) v='client';
+ $$('section.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));
+ $$('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));
+ if(v==='plan-3d'){syncRoomInputs();resizeCanvases();}
+ if(v==='collaborateur') renderCompl();
+}
+window.addEventListener('hashchange',route);
+
+/* ---------- Pièce partagée ---------- */
+function syncRoomInputs(){
+ const r=S.room;
+ ['rL','pL'].forEach(i=>$('#'+i).value=r.L); ['rW','pWd'].forEach(i=>$('#'+i).value=r.W); ['rH','pH'].forEach(i=>$('#'+i).value=r.H);
+}
+function setRoom(k,v){v=parseFloat(v);if(!(v>0))return;S.room[k]=v;save();syncRoomInputs();renderClient();renderPlan();}
+[['rL','L'],['pL','L'],['rW','W'],['pWd','W'],['rH','H'],['pH','H']].forEach(([i,k])=>$('#'+i).addEventListener('input',e=>setRoom(k,e.target.value)));
+
+/* ---------- Outil client ---------- */
+const NEEDS=[
+ {id:'douche',lbl:'Douche (receveur + paroi)'},{id:'colonne',lbl:'Colonne / mitigeur de douche'},
+ {id:'baignoire',lbl:'Baignoire'},{id:'mitbain',lbl:'Mitigeur bain-douche'},
+ {id:'vasque',lbl:'Meuble vasque'},{id:'mitlav',lbl:'Mitigeur lavabo'},{id:'miroir',lbl:'Miroir lumineux'},
+ {id:'wc',lbl:'WC suspendu + plaque'},{id:'seche',lbl:'Sèche-serviettes'},{id:'vmc',lbl:'Ventilation'},
+ {id:'solcar',lbl:'Carrelage de sol'},{id:'faience',lbl:'Faïence murale (zone douche/bain)'},{id:'access',lbl:'Accessoires'},
+];
+const PRESETS={complet:['douche','colonne','vasque','mitlav','miroir','wc','seche','vmc','solcar','faience','access'],douche:['douche','colonne','faience'],rafraichir:['vasque','mitlav','miroir','access'],perso:null};
+let clientNeeds=new Set(PRESETS.complet);
+$('#needs').innerHTML=NEEDS.map(n=>`<label class="chk"><input type="checkbox" data-n="${n.id}"> ${n.lbl}</label>`).join('');
+$$('#needs input').forEach(i=>i.addEventListener('change',()=>{i.checked?clientNeeds.add(i.dataset.n):clientNeeds.delete(i.dataset.n);$('#projType').value='perso';renderClient();}));
+$('#projType').addEventListener('change',e=>{const p=PRESETS[e.target.value];if(p)clientNeeds=new Set(p);renderClient();});
+['iso','role','rapide','cGamme','cPose'].forEach(i=>$('#'+i).addEventListener('change',renderClient));
+
+function clientLines(){
+ const g=+$('#cGamme').value, r=S.room, lines=[];
+ clientNeeds.forEach(id=>{
+  let q=1;
+  if(id==='solcar') q=Math.ceil(r.L*r.W*1.1*2)/2;
+  if(id==='faience') q=Math.ceil(((r.L+r.W)*2*2.0*0.4)*1.1*2)/2; // ~40 % des murs (zone eau)
+  lines.push({id,g,q});
+  if(id==='wc') lines.push({id:'plaque',g,q:1});
+  if(id==='douche'||id==='baignoire') lines.push({id:'evac',g,q:1});
+  if(id==='solcar'||id==='faience') lines.push({id:'colle',g,q});
+ });
+ // fusionner colle
+ const m={};lines.forEach(l=>{const k=l.id;if(m[k]){m[k].q+=l.q}else m[k]={...l}});
+ return Object.values(m);
+}
+function heatW(){
+ const r=S.room,vol=r.L*r.W*r.H,coef=+$('#iso').value,role=+$('#role').value;
+ const raw=vol*coef*role, sizes=[300,400,500,600,750,1000,1250,1500,1750,2000];
+ return {vol,coef,role,raw,std:sizes.find(s=>s>=raw)||2000};
+}
+function renderClient(){
+ const r=S.room;
+ $('#kS').textContent=(r.L*r.W).toFixed(2).replace('.',',')+' m²';
+ $('#kV').textContent=(r.L*r.W*r.H).toFixed(1).replace('.',',')+' m³';
+ $('#kP').textContent=((r.L+r.W)*2).toFixed(1).replace('.',',')+' m';
+ const h=heatW();
+ $('#pW').textContent=h.std+' W';
+ $('#pCalc').textContent=`${h.vol.toFixed(1).replace('.',',')} m³ × ${h.coef} W/m³${h.role<1?' × 0,6 (appoint)':''} ≈ ${Math.round(h.raw)} W → modèle standard supérieur`;
+ let reco=$('#rapide').checked?'<div class="msg ok">Conseil : modèle <b>avec soufflerie</b> (souvent +1 000 W en relance) pour chauffer vite au réveil.</div>':'<div class="msg ok">Conseil : modèle à <b>fluide caloporteur ou à inertie</b> pour une chaleur douce et homogène.</div>';
+ if(h.raw>2000) reco+='<div class="msg warn">Besoin supérieur à 2 000 W : prévoir un second émetteur.</div>';
+ $('#pReco').innerHTML=reco;
+ $$('#needs input').forEach(i=>i.checked=clientNeeds.has(i.dataset.n));
+ const lines=clientLines(); let tot=lines.reduce((s,l)=>s+cat(l.id).p[l.g]*l.q,0);
+ const pose=$('#cPose').checked; if(pose) tot*=1+S.posePct/100;
+ $('#poseLbl').textContent=pose?' + pose estimée':'';
+ $('#bud').textContent=lines.length?`${eur(Math.round(tot*0.85/10)*10)} – ${eur(Math.round(tot*1.15/10)*10)}`:'–';
+}
+$('#toDevis').addEventListener('click',()=>{
+ S.devis=clientLines().map(l=>({id:l.id,g:l.g,q:l.q}));
+ S.vPose=$('#cPose').checked; save(); renderDevis(); location.hash='vente';
+});
+
+/* ---------- Outil collaborateur ---------- */
+const DISC=[
+ "Type de projet : rénovation complète, partielle ou remplacement d'un élément ?",
+ "Dimensions de la pièce + plan (porte, fenêtre, arrivées d'eau, évacuations)",
+ "Qui utilise la salle de bain ? (enfants, seniors, mobilité réduite)",
+ "Douche, baignoire, ou les deux ?",
+ "Budget global envisagé",
+ "Délai / date de fin souhaitée",
+ "Pose : le client pose lui-même ou veut un poseur ?",
+ "Chauffage et ventilation actuels",
+ "Style et ambiance recherchés (couleurs, matières)",
+ "Besoins de rangement",
+ "Propriétaire ou locataire, âge du logement (TVA, aides)",
+];
+function renderDisc(){
+ $('#disc').innerHTML=DISC.map((q,i)=>`<label class="chk"><input type="checkbox" data-d="${i}" ${S.disc[i]?'checked':''}> ${q}</label>`).join('');
+ $$('#disc input').forEach(c=>c.addEventListener('change',()=>{S.disc[c.dataset.d]=c.checked;save();discProgress();}));
+ $('#notes').value=S.notes||''; discProgress();
+}
+function discProgress(){const n=DISC.filter((_,i)=>S.disc[i]).length;$('#discBar').style.width=(n/DISC.length*100)+'%';$('#discTxt').textContent=`${n} / ${DISC.length} points abordés`;}
+$('#notes').addEventListener('input',e=>{S.notes=e.target.value;save();});
+$('#resetDisc').addEventListener('click',()=>{S.disc={};S.notes='';save();renderDisc();});
+
+function missingCompl(){
+ const have=new Set(S.devis.map(l=>l.id)), out=[];
+ have.forEach(id=>(COMPL[id]||[]).forEach(c=>{if(!have.has(c)&&!out.find(o=>o.c===c))out.push({from:id,c});}));
+ return out;
+}
+function renderCompl(){
+ const have=new Set(S.devis.map(l=>l.id)), miss=missingCompl();
+ let h='';
+ if(!S.devis.length) h='<div class="msg info">Le devis est vide : ajoute des produits dans l\'onglet Simulation de vente.</div>';
+ else if(!miss.length) h='<div class="msg ok">Toutes les ventes complémentaires principales sont dans le devis. 👍</div>';
+ miss.forEach(m=>{h+=`<div class="msg warn flex"><span>Avec <b>${cat(m.from).name}</b> → proposer <b>${cat(m.c).name}</b> <span class="pill a${cat(m.c).allee}">Allée ${cat(m.c).allee}</span></span><button class="small" data-addc="${m.c}">+ Ajouter</button></div>`;});
+ Object.keys(TIPS).forEach(k=>{if(have.has(k))h+=`<div class="msg info">${TIPS[k]}</div>`;});
+ if(!have.has('access')&&S.devis.length) h+=`<div class="msg info">Finition : proposer un lot d'accessoires assorti à la robinetterie.</div>`;
+ $('#compl').innerHTML=h;
+ $$('[data-addc]').forEach(b=>b.addEventListener('click',()=>{addLine(b.dataset.addc,defaultG(),1);renderCompl();}));
+ const ids=have.size?[...have]:Object.keys(ARG);
+ $('#args').innerHTML=ids.filter(i=>ARG[i]).map(i=>`<div style="padding:6px 0;border-bottom:1px solid var(--line)"><b>${cat(i).name}</b><br><span class="sub" style="color:var(--ink)">${ARG[i]}</span></div>`).join('');
+}
+
+/* ---------- Simulation de vente ---------- */
+function defaultG(){return +$('#addG').value;}
+function fillProdSelect(){$('#addProd').innerHTML=S.cat.map(c=>`<option value="${c.id}">${c.name} (allée ${c.allee})</option>`).join('');}
+function addLine(id,g,q){const ex=S.devis.find(l=>l.id===id&&l.g===g);if(ex)ex.q+=q;else S.devis.push({id,g,q});save();renderDevis();}
+$('#addBtn').addEventListener('click',()=>{const q=parseFloat($('#addQ').value)||1;addLine($('#addProd').value,defaultG(),q);});
+$('#remise').addEventListener('input',e=>{S.remise=Math.max(0,+e.target.value||0);save();renderTotals();});
+$('#posePct').addEventListener('input',e=>{S.posePct=Math.max(0,+e.target.value||0);save();renderTotals();renderClient();});
+$('#vPose').addEventListener('change',e=>{S.vPose=e.target.checked;save();renderTotals();});
+$('#clearDevis').addEventListener('click',()=>{S.devis=[];save();renderDevis();$('#evalBox').innerHTML='';});
+
+function totals(){
+ const mat=S.devis.reduce((s,l)=>s+cat(l.id).p[l.g]*l.q,0);
+ const rem=mat*S.remise/100, pose=S.vPose?(mat-rem)*S.posePct/100:0;
+ return {mat,rem,pose,tot:mat-rem+pose};
+}
+function renderDevis(){
+ $('#remise').value=S.remise;$('#posePct').value=S.posePct;$('#vPose').checked=S.vPose;
+ const b=$('#devisBody');
+ if(!S.devis.length){b.innerHTML='<tr><td colspan="7" class="sub">Aucun produit. Ajoute-en ci-dessus, depuis l\'outil client ou depuis le plan 3D.</td></tr>';}
+ else b.innerHTML=S.devis.map((l,i)=>{const c=cat(l.id),pu=c.p[l.g];return `<tr>
+  <td>${c.name}</td><td><span class="pill a${c.allee}">Allée ${c.allee}</span></td>
+  <td><select data-gi="${i}">${G.map((n,k)=>`<option value="${k}" ${k===l.g?'selected':''}>${n}</option>`).join('')}</select></td>
+  <td class="num"><input type="number" min="0" step="${c.unit==='m²'?0.5:1}" value="${l.q}" data-qi="${i}"> ${c.unit}</td>
+  <td class="num">${eur(pu)}</td><td class="num">${eur(pu*l.q)}</td>
+  <td class="num"><button class="small danger" data-di="${i}">✕</button></td></tr>`}).join('');
+ $$('[data-gi]').forEach(s=>s.addEventListener('change',()=>{S.devis[s.dataset.gi].g=+s.value;save();renderDevis();}));
+ $$('[data-qi]').forEach(s=>s.addEventListener('change',()=>{const v=parseFloat(s.value);if(v>0)S.devis[s.dataset.qi].q=v;else S.devis.splice(s.dataset.qi,1);save();renderDevis();}));
+ $$('[data-di]').forEach(s=>s.addEventListener('click',()=>{S.devis.splice(s.dataset.di,1);save();renderDevis();}));
+ renderTotals(); renderCompl();
+}
+function renderTotals(){
+ const t=totals();
+ const a3=S.devis.filter(l=>cat(l.id).allee==3).reduce((s,l)=>s+cat(l.id).p[l.g]*l.q,0);
+ $('#totBody').innerHTML=`<tr><td>Matériel</td><td class="num">${eur(t.mat)}</td></tr>
+ <tr><td class="sub">dont allée 3 / allée 4</td><td class="num sub">${eur(a3)} / ${eur(t.mat-a3)}</td></tr>
+ ${t.rem?`<tr><td>Remise ${S.remise} %</td><td class="num">− ${eur(t.rem)}</td></tr>`:''}
+ ${S.vPose?`<tr><td>Pose estimée (${S.posePct} %)</td><td class="num">${eur(t.pose)}</td></tr>`:''}
+ <tr><td>Total TTC estimé</td><td class="num">${eur(t.tot)}</td></tr>`;
+}
+$('#copyDevis').addEventListener('click',async()=>{
+ const t=totals(), r=S.room;
+ let txt=`DEVIS INDICATIF – Salle de bain ${r.L} × ${r.W} m\n`;
+ if(S.persona) txt+=`Client : ${S.persona.name}\n`;
+ txt+='-----------------------------------------\n';
+ S.devis.forEach(l=>{const c=cat(l.id);txt+=`${c.name} [${G[l.g]}] – allée ${c.allee} – ${l.q} ${c.unit} × ${eur(c.p[l.g])} = ${eur(c.p[l.g]*l.q)}\n`;});
+ txt+='-----------------------------------------\n';
+ txt+=`Matériel : ${eur(t.mat)}\n`; if(t.rem)txt+=`Remise : -${eur(t.rem)}\n`; if(S.vPose)txt+=`Pose estimée : ${eur(t.pose)}\n`;
+ txt+=`TOTAL TTC ESTIMÉ : ${eur(t.tot)}\nPrix indicatifs, à confirmer en magasin.`;
+ const ta=$('#copyArea'); ta.value=txt; ta.style.display='block';
+ try{await navigator.clipboard.writeText(txt);$('#copyDevis').textContent='Copié ✓';setTimeout(()=>$('#copyDevis').textContent='Copier le devis',1500);}
+ catch(e){ta.select();$('#copyDevis').textContent='Sélectionné : Ctrl+C';}
+});
+
+/* Catalogue éditable */
+function renderCat(){
+ $('#catBody').innerHTML=S.cat.map((c,i)=>`<tr><td>${c.name}</td>
+  <td><select data-ca="${i}"><option value="3" ${c.allee==3?'selected':''}>3</option><option value="4" ${c.allee==4?'selected':''}>4</option></select></td>
+  <td>${c.unit}</td>${c.p.map((p,k)=>`<td class="num"><input type="number" min="0" value="${p}" data-cp="${i}-${k}"></td>`).join('')}</tr>`).join('');
+ $$('[data-ca]').forEach(s=>s.addEventListener('change',()=>{S.cat[s.dataset.ca].allee=+s.value;save();fillProdSelect();renderDevis();}));
+ $$('[data-cp]').forEach(s=>s.addEventListener('change',()=>{const[i,k]=s.dataset.cp.split('-');S.cat[i].p[k]=Math.max(0,+s.value||0);save();renderDevis();renderClient();}));
+}
+$('#resetCat').addEventListener('click',()=>{S.cat=JSON.parse(JSON.stringify(DEFAULT_CAT));save();renderCat();fillProdSelect();renderDevis();renderClient();});
+
+/* Personas */
+const PERSONAS=[
+ {name:'Mme Durand, 72 ans, retraitée',desc:"Elle n'arrive plus à enjamber sa baignoire et veut une douche « où on ne risque pas de tomber ». Elle aimerait aussi avoir plus chaud le matin.",room:{L:2.2,W:1.7,H:2.5},budget:2600,need:['douche','colonne','seche'],g:1,pose:true},
+ {name:'Léa et Tom, primo-accédants',desc:"Appartement ancien acheté avec peu de marge. Ils veulent tout refaire mais « sans se ruiner », et poseront eux-mêmes.",room:{L:2.0,W:1.7,H:2.5},budget:3200,need:['douche','colonne','vasque','mitlav','wc','solcar'],g:0,pose:false},
+ {name:'Famille Martin, 2 jeunes enfants',desc:"Ils veulent garder une baignoire pour les enfants, plus de rangement et une pièce qui sèche vite (problème de buée).",room:{L:3.0,W:2.4,H:2.5},budget:5200,need:['baignoire','mitbain','vasque','mitlav','colmeuble','seche','vmc'],g:1,pose:true},
+ {name:'M. Benali, investisseur locatif',desc:"Studio à relouer dans 3 semaines. Il veut rafraîchir vite et pas cher : le meuble vasque est abîmé et le miroir aussi.",room:{L:1.8,W:1.6,H:2.5},budget:900,need:['vasque','mitlav','miroir'],g:0,pose:false},
+ {name:'Claire et Hugo, projet haut de gamme',desc:"Maison récente. Ils veulent une douche à l'italienne, un WC suspendu et une ambiance « hôtel ». Le budget n'est pas le premier critère.",room:{L:3.2,W:2.6,H:2.6},budget:9500,need:['douche','colonne','vasque','mitlav','miroir','wc','seche','solcar','faience'],g:2,pose:true},
+ {name:'M. Petit, salle de bain froide',desc:"« Ma salle de bain est glaciale et il y a de la moisissure au plafond. » Il ne veut pas faire de gros travaux.",room:{L:2.4,W:1.9,H:2.5},budget:700,need:['seche','vmc'],g:1,pose:false},
+];
+function renderPersona(){
+ const p=S.persona; if(!p){return;}
+ $('#personaBox').innerHTML=`<div class="persona"><h3>${p.name}</h3><div>${p.desc}</div>
+ <div class="sub" style="margin-top:8px">Pièce : ${String(p.room.L).replace(".",",")} × ${String(p.room.W).replace(".",",")} m · Budget annoncé : <b>${eur(p.budget)}</b> ${p.pose?'pose comprise':'(pose par le client)'}</div></div>
+ <div class="sub" style="margin-top:6px">Les dimensions de la pièce ont été chargées dans l'outil client et le plan 3D.</div>`;
+}
+$('#newClient').addEventListener('click',()=>{
+ let p; do{p=PERSONAS[Math.floor(Math.random()*PERSONAS.length)];}while(S.persona&&PERSONAS.length>1&&p.name===S.persona.name);
+ S.persona=p; S.room={...p.room}; S.devis=[]; S.disc={}; S.notes=''; S.items=[]; S.remise=0; S.vPose=false;
+ save(); syncRoomInputs(); renderPersona(); renderDevis(); renderDisc(); renderClient(); renderPlan(); $('#evalBox').innerHTML='';
+});
+$('#evalBtn').addEventListener('click',()=>{
+ const p=S.persona, box=$('#evalBox');
+ if(!p){box.innerHTML='<div class="msg info">Tire d\'abord un client avec « Nouveau client ».</div>';return;}
+ const have=new Set(S.devis.map(l=>l.id)), fb=[]; let sc=0;
+ // besoins (40)
+ const miss=p.need.filter(n=>!have.has(n)); sc+=40*(p.need.length-miss.length)/p.need.length;
+ if(miss.length) fb.push(['bad',`Besoins non couverts : ${miss.map(m=>cat(m).name).join(', ')}.`]); else fb.push(['ok','Tous les besoins exprimés sont couverts.']);
+ // budget (25)
+ const t=totals(), tot=p.pose&&!S.vPose?t.tot*(1+S.posePct/100):t.tot, ratio=tot/p.budget;
+ if(p.pose&&!S.vPose) fb.push(['warn','Le client veut la pose : pense à l\'inclure dans le devis.']);
+ if(!p.pose&&S.vPose) fb.push(['warn','Le client pose lui-même : la pose n\'était pas demandée.']);
+ if(ratio<=1.1&&ratio>=0.7){sc+=25;fb.push(['ok',`Budget respecté : ${eur(tot)} pour ${eur(p.budget)} annoncés.`]);}
+ else if(ratio>1.1){const pen=Math.min(25,(ratio-1.1)*80);sc+=25-pen;fb.push(['bad',`Dépassement : ${eur(tot)} pour ${eur(p.budget)} (+${Math.round((ratio-1)*100)} %). Baisse une gamme ou retire un élément non prioritaire.`]);}
+ else{sc+=15;fb.push(['warn',`Devis à ${Math.round(ratio*100)} % du budget : il reste de la marge pour monter en gamme ou ajouter du confort.`]);}
+ // gamme (10)
+ const gs=S.devis.filter(l=>p.need.includes(l.id)).map(l=>l.g); const avg=gs.length?gs.reduce((a,b)=>a+b,0)/gs.length:0;
+ if(gs.length&&Math.abs(avg-p.g)<=0.5){sc+=10;fb.push(['ok',`Gamme adaptée au profil (${G[p.g]}).`]);}
+ else if(gs.length) fb.push(['warn',`Gamme moyenne proposée : ${G[Math.round(avg)]}, le profil attend plutôt ${G[p.g]}.`]);
+ // complémentaires (15)
+ const mc=missingCompl(); const totC=[...have].reduce((s,id)=>s+(COMPL[id]||[]).length,0);
+ if(!mc.length){sc+=15;fb.push(['ok','Ventes complémentaires bien proposées.']);}
+ else{sc+=15*Math.max(0,1-mc.length/Math.max(1,totC));fb.push(['warn',`Complémentaires oubliés : ${mc.map(m=>cat(m.c).name).join(', ')}.`]);}
+ // découverte (10)
+ const n=DISC.filter((_,i)=>S.disc[i]).length; sc+=10*n/DISC.length;
+ fb.push([n>=8?'ok':'warn',`Découverte : ${n}/${DISC.length} questions abordées (onglet Collaborateur).`]);
+ sc=Math.round(sc); const col=sc>=80?'var(--ok)':sc>=55?'var(--warn)':'var(--bad)';
+ box.innerHTML=`<div class="flex"><div><div class="sub">Score de la vente</div><div class="score" style="color:${col}">${sc}/100</div></div><div class="sub" style="max-width:220px">${sc>=80?'Excellente vente !':sc>=55?'Bonne base, quelques points à travailler.':'À retravailler : repars des besoins du client.'}</div></div>`+fb.map(([k,m])=>`<div class="msg ${k}">${m}</div>`).join('');
+});
+
+/* ---------- Plan 3D ---------- */
+const TYPES={
+ douche90:{label:'Douche 90×90',w:90,d:90,kind:'douche',clear:60,color:'#7fb7d6'},
+ douche120:{label:'Douche 120×80',w:120,d:80,kind:'douche',clear:60,color:'#7fb7d6'},
+ baignoire:{label:'Baignoire 170×70',w:170,d:70,kind:'baignoire',clear:60,color:'#8fc6dc'},
+ vasque60:{label:'Meuble vasque 60',w:60,d:46,kind:'vasque',clear:60,color:'#c49a6c',f:1},
+ vasque80:{label:'Meuble vasque 80',w:80,d:46,kind:'vasque',clear:60,color:'#c49a6c',f:1.3},
+ vasque120:{label:'Double vasque 120',w:120,d:46,kind:'vasque',clear:60,color:'#c49a6c',f:2},
+ wc:{label:'WC suspendu',w:40,d:54,kind:'wc',clear:60,color:'#b9c1c6'},
+ seche:{label:'Sèche-serviettes',w:50,d:10,kind:'seche',clear:0,color:'#e07a5f'},
+ colonne:{label:'Colonne rangement',w:35,d:35,kind:'colmeuble',clear:40,color:'#a9805a'},
+ lavelinge:{label:'Lave-linge',w:60,d:60,kind:'lavelinge',clear:60,color:'#9aa5ab'},
+ porte:{label:'Porte (ouverture)',w:80,d:80,kind:'porte',clear:0,color:'#8d6e63'},
+};
+$('#palette').innerHTML=Object.entries(TYPES).map(([k,t])=>`<button data-t="${k}"><i style="background:${t.color}"></i>${t.label}</button>`).join('');
+let sel=-1;
+$$('#palette button').forEach(b=>b.addEventListener('click',()=>{
+ const t=TYPES[b.dataset.t], R=roomCm();
+ const it={t:b.dataset.t,x:Math.max(0,R.L/2-t.w/2),y:Math.max(0,R.W/2-t.d/2),rot:0};
+ S.items.push(it); sel=S.items.length-1; if($('#snap').checked) snapItem(it); placeFree(it); save(); renderPlan();
+}));
+function placeFree(it){
+ // cherche une place libre le long des murs (élément + dégagement)
+ const R=roomCm(), others=S.items.filter(o=>o!==it);
+ const ok=()=>{const r=rectOf(it);if(r.x<0||r.y<0||r.x+r.w>R.L||r.y+r.h>R.W)return false;
+  if(others.some(o=>inter(r,rectOf(o))))return false;const fr=frontRect(it);
+  if(fr&&others.some(o=>o.t!=='porte'&&inter(fr,rectOf(o))))return false;return true;};
+ if(ok())return;
+ for(const rot of [0,90,180,270]){
+  it.rot=rot;const f=fp(it);
+  const along=rot%180?R.W-f.d:R.L-f.w;
+  for(let s=0;s<=along;s+=5){
+   if(rot===0){it.x=s;it.y=0;} if(rot===180){it.x=s;it.y=R.W-f.d;}
+   if(rot===90){it.x=R.L-f.w;it.y=s;} if(rot===270){it.x=0;it.y=s;}
+   if(ok())return;
+  }
+ }
+ it.rot=0;it.x=Math.max(0,R.L/2-TYPES[it.t].w/2);it.y=0; // pas de place : on laisse l'alerte s'afficher
+}
+const roomCm=()=>({L:S.room.L*100,W:S.room.W*100,H:S.room.H*100});
+const fp=it=>{const t=TYPES[it.t];return it.rot%180?{w:t.d,d:t.w}:{w:t.w,d:t.d};};
+function rectOf(it){const f=fp(it);return{x:it.x,y:it.y,w:f.w,h:f.d};}
+function frontRect(it){
+ const t=TYPES[it.t],c=t.clear,f=fp(it); if(!c) return null;
+ switch(it.rot){case 0:return{x:it.x,y:it.y+f.d,w:f.w,h:c};case 180:return{x:it.x,y:it.y-c,w:f.w,h:c};case 90:return{x:it.x-c,y:it.y,w:c,h:f.d};default:return{x:it.x+f.w,y:it.y,w:c,h:f.d};}
+}
+const inter=(a,b)=>a.x<b.x+b.w-0.5&&b.x<a.x+a.w-0.5&&a.y<b.y+b.h-0.5&&b.y<a.y+a.h-0.5;
+function snapItem(it){
+ const R=roomCm(), f0=fp(it), cx=it.x+f0.w/2, cy=it.y+f0.d/2;
+ const dists=[[cy,0],[R.L-cx,90],[R.W-cy,180],[cx,270]]; dists.sort((a,b)=>a[0]-b[0]);
+ it.rot=dists[0][1]; const f=fp(it);
+ it.x=cx-f.w/2; it.y=cy-f.d/2;
+ if(it.rot===0) it.y=0; if(it.rot===180) it.y=R.W-f.d; if(it.rot===90) it.x=R.L-f.w; if(it.rot===270) it.x=0;
+ it.x=Math.min(Math.max(0,it.x),Math.max(0,R.L-f.w)); it.y=Math.min(Math.max(0,it.y),Math.max(0,R.W-f.d));
+ it.x=Math.round(it.x); it.y=Math.round(it.y);
+}
+$('#rotBtn').addEventListener('click',()=>{if(sel<0)return;const it=S.items[sel],f0=fp(it),cx=it.x+f0.w/2,cy=it.y+f0.d/2;it.rot=(it.rot+90)%360;const f=fp(it);it.x=Math.round(cx-f.w/2);it.y=Math.round(cy-f.d/2);save();renderPlan();});
+$('#delBtn').addEventListener('click',()=>{if(sel<0)return;S.items.splice(sel,1);sel=-1;save();renderPlan();});
+window.addEventListener('keydown',e=>{if(location.hash!=='#plan-3d'||sel<0||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;if(e.key==='r'||e.key==='R')$('#rotBtn').click();if(e.key==='Delete'||e.key==='Backspace')$('#delBtn').click();});
+
+function checks(){
+ const R=roomCm(), out=[], bad=new Set(), badC=new Set();
+ S.items.forEach((it,i)=>{
+  const r=rectOf(it), t=TYPES[it.t];
+  if(r.x<-0.5||r.y<-0.5||r.x+r.w>R.L+0.5||r.y+r.h>R.W+0.5){bad.add(i);out.push(['bad',`${t.label} dépasse de la pièce.`]);}
+  S.items.forEach((o,j)=>{if(j<=i)return;if(inter(r,rectOf(o))){bad.add(i);bad.add(j);out.push(['bad',`${t.label} et ${TYPES[o.t].label} se chevauchent${(it.t==='porte'||o.t==='porte')?' (la porte ne pourra pas s\'ouvrir)':''}.`]);}});
+  const fr=frontRect(it);
+  if(fr){
+   const outR=fr.x<-0.5||fr.y<-0.5||fr.x+fr.w>R.L+0.5||fr.y+fr.h>R.W+0.5;
+   const blk=S.items.some((o,j)=>j!==i&&inter(fr,rectOf(o))&&o.t!=='porte'&&o.t!=='seche');
+   if(outR||blk){badC.add(i);out.push(['warn',`Dégagement de ${t.clear} cm insuffisant devant : ${t.label}.`]);}
+  }
+ });
+ if(S.items.length&&!S.items.some(i=>i.t==='porte')) out.push(['info','Ajoute la porte pour vérifier son ouverture.']);
+ if(S.items.some(i=>TYPES[i.t].kind==='douche'||TYPES[i.t].kind==='baignoire')) out.push(['info','Sèche-serviettes et luminaires : à placer hors volumes 0 et 1 (voir onglet Collaborateur).']);
+ if(S.items.length&&!out.some(o=>o[0]!=='info')) out.unshift(['ok','Plan cohérent : aucun chevauchement, dégagements respectés.']);
+ return {out,bad,badC};
+}
+
+/* Canvas 2D */
+const c2=$('#c2d'), x2=c2.getContext('2d'), c3=$('#c3d'), x3=c3.getContext('2d');
+let T2={s:1,ox:0,oy:0};
+function resizeCanvases(){
+ const dpr=window.devicePixelRatio||1;
+ [c2,c3].forEach(c=>{const w=c.clientWidth||600,h=440;c.width=w*dpr;c.height=h*dpr;c.style.height=h+'px';c.getContext('2d').setTransform(dpr,0,0,dpr,0,0);});
+ renderPlan();
+}
+window.addEventListener('resize',resizeCanvases);
+function draw2D(ck){
+ const W=c2.clientWidth, H=440, R=roomCm(); x2.clearRect(0,0,W,H);
+ const s=Math.min((W-60)/R.L,(H-60)/R.W); const ox=(W-R.L*s)/2, oy=(H-R.W*s)/2; T2={s,ox,oy};
+ const X=v=>ox+v*s, Y=v=>oy+v*s;
+ // grille
+ x2.strokeStyle='#eceae4';x2.lineWidth=1;
+ for(let v=0;v<=R.L;v+=10){x2.globalAlpha=v%50?0.5:1;x2.beginPath();x2.moveTo(X(v),Y(0));x2.lineTo(X(v),Y(R.W));x2.stroke();}
+ for(let v=0;v<=R.W;v+=10){x2.globalAlpha=v%50?0.5:1;x2.beginPath();x2.moveTo(X(0),Y(v));x2.lineTo(X(R.L),Y(v));x2.stroke();}
+ x2.globalAlpha=1;
+ x2.strokeStyle='#14323f';x2.lineWidth=6;x2.strokeRect(X(0)-3,Y(0)-3,R.L*s+6,R.W*s+6);
+ // cotes
+ x2.fillStyle='#64737b';x2.font='12px system-ui';x2.textAlign='center';
+ x2.fillText((R.L/100).toFixed(2).replace('.',',')+' m',X(R.L/2),Y(0)-12);
+ x2.save();x2.translate(X(0)-14,Y(R.W/2));x2.rotate(-Math.PI/2);x2.fillText((R.W/100).toFixed(2).replace('.',',')+' m',0,0);x2.restore();
+ // dégagements
+ S.items.forEach((it,i)=>{const fr=frontRect(it);if(!fr)return;x2.setLineDash([5,4]);x2.lineWidth=1.3;
+  const b=ck.badC.has(i);x2.strokeStyle=b?'#b3261e':'#6aa7bd';x2.fillStyle=b?'rgba(179,38,30,.08)':'rgba(106,167,189,.08)';
+  x2.fillRect(X(fr.x),Y(fr.y),fr.w*s,fr.h*s);x2.strokeRect(X(fr.x),Y(fr.y),fr.w*s,fr.h*s);x2.setLineDash([]);});
+ // éléments
+ S.items.forEach((it,i)=>{
+  const t=TYPES[it.t], r=rectOf(it);
+  if(it.t==='porte'){
+   // arc d'ouverture
+   const hinge={0:[r.x,r.y],180:[r.x+r.w,r.y+r.h],90:[r.x+r.w,r.y],270:[r.x,r.y+r.h]}[it.rot];
+   const a0={0:0,90:Math.PI/2,180:Math.PI,270:-Math.PI/2}[it.rot];
+   x2.fillStyle='rgba(141,110,99,.12)';x2.strokeStyle=ck.bad.has(i)?'#b3261e':'#8d6e63';x2.lineWidth=1.5;
+   x2.beginPath();x2.moveTo(X(hinge[0]),Y(hinge[1]));x2.arc(X(hinge[0]),Y(hinge[1]),80*s,a0,a0+Math.PI/2);x2.closePath();x2.fill();x2.stroke();
+   x2.strokeStyle='#14323f';x2.lineWidth=8;x2.beginPath();
+   if(it.rot===0||it.rot===180){x2.moveTo(X(r.x),Y(it.rot===0?0:R.W));x2.lineTo(X(r.x+r.w),Y(it.rot===0?0:R.W));x2.strokeStyle='#fbfbfa';}
+   else{x2.moveTo(X(it.rot===90?R.L:0),Y(r.y));x2.lineTo(X(it.rot===90?R.L:0),Y(r.y+r.h));x2.strokeStyle='#fbfbfa';}
+   x2.stroke();
+  } else {
+   x2.fillStyle=t.color;x2.globalAlpha=0.85;x2.fillRect(X(r.x),Y(r.y),r.w*s,r.h*s);x2.globalAlpha=1;
+   x2.lineWidth=ck.bad.has(i)?2.5:1.2;x2.strokeStyle=ck.bad.has(i)?'#b3261e':'#2b3a40';x2.strokeRect(X(r.x),Y(r.y),r.w*s,r.h*s);
+   // face avant
+   const fr=frontRect(it)||{0:{x:r.x,y:r.y+r.h,w:r.w,h:0},180:{x:r.x,y:r.y,w:r.w,h:0},90:{x:r.x,y:r.y,w:0,h:r.h},270:{x:r.x+r.w,y:r.y,w:0,h:r.h}}[it.rot];
+   x2.strokeStyle='#14323f';x2.lineWidth=3;x2.beginPath();
+   if(it.rot===0){x2.moveTo(X(r.x),Y(r.y+r.h));x2.lineTo(X(r.x+r.w),Y(r.y+r.h));}
+   if(it.rot===180){x2.moveTo(X(r.x),Y(r.y));x2.lineTo(X(r.x+r.w),Y(r.y));}
+   if(it.rot===90){x2.moveTo(X(r.x),Y(r.y));x2.lineTo(X(r.x),Y(r.y+r.h));}
+   if(it.rot===270){x2.moveTo(X(r.x+r.w),Y(r.y));x2.lineTo(X(r.x+r.w),Y(r.y+r.h));}
+   x2.stroke();
+  }
+  if(i===sel){x2.setLineDash([4,3]);x2.strokeStyle='#1d6f8c';x2.lineWidth=2;x2.strokeRect(X(r.x)-4,Y(r.y)-4,r.w*s+8,r.h*s+8);x2.setLineDash([]);}
+  x2.fillStyle='#14323f';x2.font='600 11px system-ui';x2.textAlign='center';
+  const lbl=t.label.replace(/ \(.*\)/,'');
+  if(r.w*s>46&&r.h*s>18) x2.fillText(lbl,X(r.x+r.w/2),Y(r.y+r.h/2)+4);
+ });
+}
+let drag=null;
+function ptCm(e){const b=c2.getBoundingClientRect();return{x:(e.clientX-b.left-T2.ox)/T2.s,y:(e.clientY-b.top-T2.oy)/T2.s};}
+c2.addEventListener('pointerdown',e=>{
+ const p=ptCm(e); sel=-1;
+ for(let i=S.items.length-1;i>=0;i--){const r=rectOf(S.items[i]);if(p.x>=r.x&&p.x<=r.x+r.w&&p.y>=r.y&&p.y<=r.y+r.h){sel=i;drag={dx:p.x-S.items[i].x,dy:p.y-S.items[i].y};c2.setPointerCapture(e.pointerId);c2.style.cursor='grabbing';break;}}
+ renderPlan();
+});
+c2.addEventListener('pointermove',e=>{
+ const p=ptCm(e);
+ if(drag&&sel>=0){const it=S.items[sel],R=roomCm(),f=fp(it);it.x=Math.round(Math.min(Math.max(-f.w/2,p.x-drag.dx),R.L-f.w/2));it.y=Math.round(Math.min(Math.max(-f.d/2,p.y-drag.dy),R.W-f.d/2));renderPlan();}
+ else{c2.style.cursor=S.items.some(it=>{const r=rectOf(it);return p.x>=r.x&&p.x<=r.x+r.w&&p.y>=r.y&&p.y<=r.y+r.h})?'grab':'default';}
+});
+c2.addEventListener('pointerup',()=>{if(drag&&sel>=0&&$('#snap').checked)snapItem(S.items[sel]);drag=null;c2.style.cursor='default';save();renderPlan();});
+
+/* Canvas 3D – petit moteur maison */
+let cam={yaw:-0.6,pitch:0.62,dist:1.0};
+const BOXES={
+ douche:t=>[[0,t.w,0,t.d,0,6,'#eef2f4',1],[t.w/2-4,t.w/2+4,0,3,95,205,'#9aa7ad',1],[0,t.w,0,t.d,6,200,'#9fd3ee',0.16]],
+ baignoire:t=>[[0,t.w,0,t.d,0,56,'#f5f8fa',1],[6,t.w-6,6,t.d-6,56,57,'#cfe7f1',1]],
+ vasque:t=>[[0,t.w,0,t.d,30,80,'#c49a6c',1],[0,t.w,0,t.d,80,86,'#f4f4f2',1],[t.w*0.1,t.w*0.9,0,2,110,180,'#d5e8f0',1]],
+ wc:t=>[[0,t.w,0,12,0,105,'#e6e6e3',1],[4,t.w-4,12,t.d,18,42,'#fafafa',1],[t.w/2-12,t.w/2+12,12,13.5,90,105,'#a8b0b4',1]],
+ seche:t=>[[0,t.w,0,t.d,40,160,'#e07a5f',1]],
+ colmeuble:t=>[[0,t.w,0,t.d,20,180,'#a9805a',1]],
+ lavelinge:t=>[[0,t.w,0,t.d,0,85,'#f0f0ee',1]],
+ porte:t=>[[0,t.w,-3,1,0,204,'#8d6e63',1]],
+};
+function toWorld(it,u,v){
+ const t=TYPES[it.t];
+ switch(it.rot){case 0:return[it.x+u,it.y+v];case 180:return[it.x+t.w-u,it.y+t.d-v];case 90:return[it.x+t.d-v,it.y+u];default:return[it.x+v,it.y+t.w-u];}
+}
+function shade(hex,k){const n=parseInt(hex.slice(1),16);let r=n>>16,g=(n>>8)&255,b=n&255;return`rgb(${Math.min(255,r*k)|0},${Math.min(255,g*k)|0},${Math.min(255,b*k)|0})`;}
+function draw3D(ck){
+ const W=c3.clientWidth,H=440,R=roomCm(); x3.clearRect(0,0,W,H);
+ const cx=R.L/2,cy=R.W/2,cz=R.H*0.35, D=Math.max(R.L,R.W,R.H)*2.1*cam.dist, F=Math.min(W,H)*1.05;
+ const cyw=Math.cos(cam.yaw),syw=Math.sin(cam.yaw),cp=Math.cos(cam.pitch),sp=Math.sin(cam.pitch);
+ const camR=[0,-D*cp,D*sp];
+ const camW=[cx+camR[0]*cyw+camR[1]*syw, cy-camR[0]*syw+camR[1]*cyw, cz+camR[2]];
+ function P(p){const x=p[0]-cx,y=p[1]-cy,z=p[2]-cz;const x1=x*cyw-y*syw,y1=x*syw+y*cyw;
+  const rx=x1-camR[0],ry=y1-camR[1],rz=z-camR[2];const dep=ry*cp-rz*sp, sx=rx, sy=ry*sp+rz*cp;
+  return[W/2+sx*F/dep,H/2-sy*F/dep,dep];}
+ const faces=[];
+ const quad=(pts,color,alpha,stroke,force)=>{
+  const c=pts.reduce((a,p)=>[a[0]+p[0]/4,a[1]+p[1]/4,a[2]+p[2]/4],[0,0,0]);
+  faces.push({pts,color,alpha,stroke,c,force});
+ };
+ // sol
+ x3.lineWidth=1;
+ const fl=[[0,0,0],[R.L,0,0],[R.L,R.W,0],[0,R.W,0]].map(P);
+ x3.fillStyle='#e9e4da';x3.beginPath();fl.forEach((p,i)=>i?x3.lineTo(p[0],p[1]):x3.moveTo(p[0],p[1]));x3.closePath();x3.fill();
+ x3.strokeStyle='rgba(0,0,0,.06)';
+ for(let v=50;v<R.L;v+=50){const a=P([v,0,0]),b=P([v,R.W,0]);x3.beginPath();x3.moveTo(a[0],a[1]);x3.lineTo(b[0],b[1]);x3.stroke();}
+ for(let v=50;v<R.W;v+=50){const a=P([0,v,0]),b=P([R.L,v,0]);x3.beginPath();x3.moveTo(a[0],a[1]);x3.lineTo(b[0],b[1]);x3.stroke();}
+ // murs du fond
+ const walls=[];
+ if(camW[1]>0) walls.push([[0,0,0],[R.L,0,0],[R.L,0,R.H],[0,0,R.H],0.93]);
+ if(camW[1]<R.W) walls.push([[0,R.W,0],[R.L,R.W,0],[R.L,R.W,R.H],[0,R.W,R.H],0.93]);
+ if(camW[0]>0) walls.push([[0,0,0],[0,R.W,0],[0,R.W,R.H],[0,0,R.H],0.86]);
+ if(camW[0]<R.L) walls.push([[R.L,0,0],[R.L,R.W,0],[R.L,R.W,R.H],[R.L,0,R.H],0.86]);
+ if(cam.pitch<1.45) walls.forEach(w=>{const p=w.slice(0,4).map(P);x3.fillStyle=shade('#f7f4ee',w[4]);x3.strokeStyle='#d8d3c8';x3.beginPath();p.forEach((q,i)=>i?x3.lineTo(q[0],q[1]):x3.moveTo(q[0],q[1]));x3.closePath();x3.fill();x3.stroke();});
+ // objets
+ const wallShown=r=>r===0?camW[1]>0:r===180?camW[1]<R.W:r===90?camW[0]<R.L:camW[0]>0;
+ S.items.forEach((it,i)=>{
+  const t=TYPES[it.t];
+  if(it.t==='porte'&&!wallShown(it.rot)) return;
+  (BOXES[t.kind]||(()=>[]))(t).forEach(([u0,u1,v0,v1,z0,z1,col,al])=>{
+   const a=toWorld(it,u0,v0),b=toWorld(it,u1,v1);
+   const X0=Math.min(a[0],b[0]),X1=Math.max(a[0],b[0]),Y0=Math.min(a[1],b[1]),Y1=Math.max(a[1],b[1]);
+   const color=ck.bad.has(i)?'#e57373':(i===sel?shade(col,1.08):col);
+   const fs=[
+    {n:[0,0,1],k:1.0,p:[[X0,Y0,z1],[X1,Y0,z1],[X1,Y1,z1],[X0,Y1,z1]]},
+    {n:[0,-1,0],k:0.82,p:[[X0,Y0,z0],[X1,Y0,z0],[X1,Y0,z1],[X0,Y0,z1]]},
+    {n:[0,1,0],k:0.78,p:[[X0,Y1,z0],[X1,Y1,z0],[X1,Y1,z1],[X0,Y1,z1]]},
+    {n:[-1,0,0],k:0.7,p:[[X0,Y0,z0],[X0,Y1,z0],[X0,Y1,z1],[X0,Y0,z1]]},
+    {n:[1,0,0],k:0.9,p:[[X1,Y0,z0],[X1,Y1,z0],[X1,Y1,z1],[X1,Y0,z1]]},
+   ];
+   fs.forEach(f=>{const c=f.p.reduce((a,p)=>[a[0]+p[0]/4,a[1]+p[1]/4,a[2]+p[2]/4],[0,0,0]);
+    const d=(camW[0]-c[0])*f.n[0]+(camW[1]-c[1])*f.n[1]+(camW[2]-c[2])*f.n[2]; if(d<=0)return;
+    quad(f.p,shade(color,f.k),al,al<1?'rgba(80,140,170,.5)':'rgba(30,40,45,.35)');});
+  });
+ });
+ faces.forEach(f=>{f.pp=f.pts.map(P);f.depth=P(f.c)[2];});
+ faces.sort((a,b)=>b.depth-a.depth);
+ faces.forEach(f=>{x3.globalAlpha=f.alpha;x3.fillStyle=f.color;x3.beginPath();f.pp.forEach((q,i)=>i?x3.lineTo(q[0],q[1]):x3.moveTo(q[0],q[1]));x3.closePath();x3.fill();x3.globalAlpha=1;x3.strokeStyle=f.stroke;x3.lineWidth=0.8;x3.stroke();});
+ if(!S.items.length){x3.fillStyle='#64737b';x3.font='14px system-ui';x3.textAlign='center';x3.fillText('Ajoute des éléments avec les boutons ci-dessus',W/2,H-24);}
+}
+let orb=null;
+c3.addEventListener('pointerdown',e=>{orb={x:e.clientX,y:e.clientY,yaw:cam.yaw,pitch:cam.pitch};c3.setPointerCapture(e.pointerId);c3.style.cursor='grabbing';});
+c3.addEventListener('pointermove',e=>{if(!orb)return;cam.yaw=orb.yaw+(e.clientX-orb.x)*0.008;cam.pitch=Math.min(1.5,Math.max(0.08,orb.pitch+(e.clientY-orb.y)*0.006));draw3D(checks());});
+c3.addEventListener('pointerup',()=>{orb=null;c3.style.cursor='grab';});
+c3.addEventListener('wheel',e=>{e.preventDefault();cam.dist=Math.min(2.2,Math.max(0.45,cam.dist*(e.deltaY>0?1.08:0.93)));draw3D(checks());},{passive:false});
+$$('[data-cam]').forEach(b=>b.addEventListener('click',()=>{const m=b.dataset.cam;cam=m==='top'?{yaw:0,pitch:1.5,dist:0.9}:m==='front'?{yaw:0,pitch:0.15,dist:1}:{yaw:-0.6,pitch:0.62,dist:1};draw3D(checks());}));
+
+function renderPlan(){
+ if(!c2.clientWidth) return;
+ const ck=checks(); draw2D(ck); draw3D(ck);
+ const R=roomCm(); const occ=S.items.filter(i=>i.t!=='porte').reduce((s,it)=>{const r=rectOf(it);return s+r.w*r.h;},0);
+ $('#pSurf').textContent=Math.max(0,(R.L*R.W-occ)/10000).toFixed(2).replace('.',',')+' m²';
+ $('#pNb').textContent=S.items.length;
+ $('#pChecks').innerHTML=ck.out.length?ck.out.map(([k,m])=>`<div class="msg ${k}">${m}</div>`).join(''):'<div class="msg info">Le plan est vide.</div>';
+ $('#rotBtn').disabled=$('#delBtn').disabled=sel<0;
+}
+$('#planToDevis').addEventListener('click',()=>{
+ const g=+$('#xG').value, r=S.room, m={};
+ const add=(id,q,f=1)=>{const k=id+'|'+f;m[k]=m[k]||{id,g,q:0,f};m[k].q+=q;};
+ S.items.forEach(it=>{const t=TYPES[it.t];
+  switch(t.kind){
+   case'douche':add('douche',1);add('colonne',1);add('evac',1);break;
+   case'baignoire':add('baignoire',1);add('mitbain',1);add('evac',1);break;
+   case'vasque':add('vasque',1);add('mitlav',t.f>=2?2:1);add('miroir',1);break;
+   case'wc':add('wc',1);add('plaque',1);break;
+   case'seche':add('seche',1);break;
+   case'colmeuble':add('colmeuble',1);break;
+  }});
+ let carr=0;
+ if($('#xSol').checked){const q=Math.ceil(r.L*r.W*1.1*2)/2;add('solcar',q);carr+=q;}
+ if($('#xFai').checked){const q=Math.ceil((r.L+r.W)*2*2*1.1*2)/2;add('faience',q);carr+=q;}
+ if(carr) add('colle',carr);
+ if($('#xVmc').checked) add('vmc',1);
+ // vasques larges : on augmente la quantité équivalente via prix ? -> on garde 1 u mais on signale
+ S.devis=Object.values(m).map(l=>({id:l.id,g:l.g,q:l.q}));
+ save(); renderDevis(); location.hash='vente';
+});
+
+/* ---------- Init ---------- */
+fillProdSelect(); renderCat(); syncRoomInputs(); renderDisc(); renderClient(); renderDevis(); renderPersona();
+route(); setTimeout(resizeCanvases,30);
+})();
+</script>
+</body>
+</html>
